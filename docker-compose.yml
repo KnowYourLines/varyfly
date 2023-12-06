@@ -21,3 +21,6 @@ services:
       - SECRET_KEY=!!f1r=78mf)an7i&t8yqy*#e%*wwcx59am^8(xor#11uh^98kt
       - DEBUG=True
       - ALLOWED_HOSTS=localhost
+      - AMADEUS_BASE_URL=
+      - AMADEUS_API_KEY=
+      - AMADEUS_API_SECRET=
