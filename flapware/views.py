@@ -2,13 +2,32 @@ import logging
 import os
 
 import httpx
+from asgiref.sync import sync_to_async
+from django.http import HttpResponseRedirect
 
 from django.shortcuts import render
 
 from flapware.forms import HomeSearchForm, HomeResultsForm
+from flapware.helpers import get_home_airports
+
+
+def save_home(request):
+    if request.method == "POST":
+        airports = request.POST.getlist("airports")
+        home_airports = request.session.get("home_airports", {})
+        for airport in airports:
+            airport_details = airport.split(",")
+            airport_name = airport_details[0]
+            airport_iata = airport_details[1]
+            if airport_iata not in home_airports:
+                home_airports[airport_iata] = airport_name
+        request.session["home_airports"] = home_airports
+    return HttpResponseRedirect("/")
 
 
 async def home(request):
+    home_airports = await sync_to_async(get_home_airports)(request)
+    logging.info(home_airports)
     form = HomeSearchForm()
     if request.method == "POST":
         form = HomeSearchForm(request.POST)
@@ -38,12 +57,11 @@ async def home(request):
                     response.raise_for_status()
                     airports = (
                         (
-                            airport["iataCode"],
+                            f"{airport['name']},{airport['iataCode']}",
                             f"{airport['name']} ({airport['address']['cityName']}, {airport['address']['countryName']})",
                         )
                         for airport in response.json()["data"]
                     )
-                    logging.info(response.json()["data"])
                 except httpx.RequestError as exc:
                     logging.error(
                         f"An error occurred while requesting {exc.request.url}."

@@ -14,6 +14,6 @@ class HomeResultsForm(forms.Form):
         widget=forms.CheckboxSelectMultiple, choices=()
     )
 
-    def __init__(self, choices, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *, choices):
+        super().__init__()
         self.fields["airports"].choices = choices
