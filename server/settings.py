@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import logging
 import os
 from pathlib import Path
 
@@ -37,7 +38,7 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 RENDER_EXTERNAL_URL = os.environ.get("RENDER_EXTERNAL_URL")
-
+logging.info(RENDER_EXTERNAL_URL)
 if RENDER_EXTERNAL_URL:
     CORS_ALLOWED_ORIGINS = [RENDER_EXTERNAL_URL]
     CSRF_TRUSTED_ORIGINS = [RENDER_EXTERNAL_URL]
