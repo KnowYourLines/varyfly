@@ -39,16 +39,19 @@ def remove_home(request):
 
 def home(request):
     home_airports = get_home_airports(request)
-    home_airports_choices = (
-        (
-            f"{name},{iata}",
-            f"{name} ({iata})",
+    if home_airports:
+        home_airports_choices = (
+            (
+                f"{name},{iata}",
+                f"{name} ({iata})",
+            )
+            for iata, name in home_airports.items()
         )
-        for iata, name in home_airports.items()
-    )
-    home_airports_form = HomeResultsForm(
-        choices=home_airports_choices, label="Home Airports"
-    )
+        home_airports_form = HomeResultsForm(
+            choices=home_airports_choices, label="Home Airports"
+        )
+    else:
+        home_airports_form = None
     form = HomeSearchForm()
     if request.method == "POST":
         form = HomeSearchForm(request.POST)

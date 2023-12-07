@@ -23,6 +23,12 @@ services:
         fromDatabase:
           name: flapware-db
           property: connectionString
+      - key: AMADEUS_API_KEY
+        sync: false
+      - key: AMADEUS_API_SECRET
+        sync: false
+      - key: AMADEUS_BASE_URL
+        sync: false
 
 databases:
   - name: flapware-db
