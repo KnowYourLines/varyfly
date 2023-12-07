@@ -59,6 +59,7 @@ def home(request):
                             f"{airport['name']} ({airport['address']['cityName']}, {airport['address']['countryName']})",
                         )
                         for airport in response.json()["data"]
+                        if airport["iataCode"] not in home_airports
                     )
                 except httpx.RequestError as exc:
                     logging.error(
@@ -72,10 +73,17 @@ def home(request):
             return render(
                 request,
                 "home.html",
-                {"form": form, "results_form": HomeResultsForm(choices=airports)},
+                {
+                    "form": form,
+                    "results_form": HomeResultsForm(choices=airports),
+                    "home_airports": home_airports,
+                },
             )
     return render(
         request,
         "home.html",
-        {"form": form},
+        {
+            "form": form,
+            "home_airports": home_airports,
+        },
     )

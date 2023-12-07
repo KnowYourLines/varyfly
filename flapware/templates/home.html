@@ -21,7 +21,7 @@
     </ul>
   </div>
 </nav>
-<div class="container text-center form-group">
+<div class="container text-center">
     <form action="" method="post">
         {% csrf_token %}
         {{ form }}
@@ -34,6 +34,14 @@
             {{ results_form }}
             <input type="submit" value="Save">
         </form>
+    {% endif %}
+    {% if home_airports %}
+        </br>
+        Home Airports:
+        <br/>
+        {% for iata, name in home_airports.items %}
+            {{ name }} ( {{ iata }} ) <br/>
+        {% endfor %}
     {% endif %}
 </div>
 </body>
