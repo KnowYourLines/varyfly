@@ -2,7 +2,6 @@ import logging
 import os
 
 import httpx
-from asgiref.sync import sync_to_async
 from django.http import HttpResponseRedirect
 
 from django.shortcuts import render
@@ -25,16 +24,15 @@ def save_home(request):
     return HttpResponseRedirect("/")
 
 
-async def home(request):
-    home_airports = await sync_to_async(get_home_airports)(request)
-    logging.info(home_airports)
+def home(request):
+    home_airports = get_home_airports(request)
     form = HomeSearchForm()
     if request.method == "POST":
         form = HomeSearchForm(request.POST)
         if form.is_valid():
-            async with httpx.AsyncClient() as client:
+            with httpx.Client() as client:
                 try:
-                    response = await client.post(
+                    response = client.post(
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
                         data={
                             "grant_type": "client_credentials",
@@ -46,7 +44,7 @@ async def home(request):
                     response = response.json()
                     access_token = response["access_token"]
                     token_type = response["token_type"]
-                    response = await client.get(
+                    response = client.get(
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
                         params={
                             "subType": "AIRPORT",
