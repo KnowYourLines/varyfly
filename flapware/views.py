@@ -5,14 +5,13 @@ import httpx
 
 from django.shortcuts import render
 
-from flapware.forms import HomeForm
+from flapware.forms import HomeSearchForm, HomeResultsForm
 
 
 async def home(request):
-    form = HomeForm()
+    form = HomeSearchForm()
     if request.method == "POST":
-        form = HomeForm(request.POST)
-        search_results = []
+        form = HomeSearchForm(request.POST)
         if form.is_valid():
             async with httpx.AsyncClient() as client:
                 try:
@@ -37,7 +36,14 @@ async def home(request):
                         headers={"Authorization": f"{token_type} {access_token}"},
                     )
                     response.raise_for_status()
-                    search_results = response.json()["data"]
+                    airports = (
+                        (
+                            airport["iataCode"],
+                            f"{airport['name']} ({airport['address']['cityName']}, {airport['address']['countryName']})",
+                        )
+                        for airport in response.json()["data"]
+                    )
+                    logging.info(response.json()["data"])
                 except httpx.RequestError as exc:
                     logging.error(
                         f"An error occurred while requesting {exc.request.url}."
@@ -47,11 +53,11 @@ async def home(request):
                         f"Error response {exc.response.status_code} while requesting {exc.request.url}."
                     )
 
-        return render(
-            request,
-            "home.html",
-            {"form": form, "search_results": search_results},
-        )
+            return render(
+                request,
+                "home.html",
+                {"form": form, "results_form": HomeResultsForm(choices=airports)},
+            )
     return render(
         request,
         "home.html",
