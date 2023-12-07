@@ -4,3 +4,4 @@ dj-database-url
 whitenoise[brotli]
 daphne
 httpx
+django-cors-headers

@@ -39,11 +39,12 @@ if RENDER_EXTERNAL_HOSTNAME:
 RENDER_EXTERNAL_URL = os.environ.get("RENDER_EXTERNAL_URL")
 
 if RENDER_EXTERNAL_URL:
-    CSRF_TRUSTED_ORIGINS = [RENDER_EXTERNAL_URL]
+    CORS_ALLOWED_ORIGINS = [RENDER_EXTERNAL_URL]
 
 # Application definition
 
 INSTALLED_APPS = [
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
