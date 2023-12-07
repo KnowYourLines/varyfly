@@ -10,7 +10,7 @@ from flapware.forms import HomeSearchForm, HomeResultsForm
 from flapware.helpers import get_home_airports
 
 
-def save_home(request):
+def add_home(request):
     if request.method == "POST":
         airports = request.POST.getlist("airports")
         home_airports = request.session.get("home_airports", {})
@@ -24,8 +24,31 @@ def save_home(request):
     return HttpResponseRedirect("/")
 
 
+def remove_home(request):
+    if request.method == "POST":
+        airports = request.POST.getlist("airports")
+        home_airports = request.session.get("home_airports", {})
+        for airport in airports:
+            airport_details = airport.split(",")
+            airport_iata = airport_details[1]
+            if airport_iata in home_airports:
+                del home_airports[airport_iata]
+        request.session["home_airports"] = home_airports
+    return HttpResponseRedirect("/")
+
+
 def home(request):
     home_airports = get_home_airports(request)
+    home_airports_choices = (
+        (
+            f"{name},{iata}",
+            f"{name} ({iata})",
+        )
+        for iata, name in home_airports.items()
+    )
+    home_airports_form = HomeResultsForm(
+        choices=home_airports_choices, label="Home Airports"
+    )
     form = HomeSearchForm()
     if request.method == "POST":
         form = HomeSearchForm(request.POST)
@@ -76,7 +99,7 @@ def home(request):
                 {
                     "form": form,
                     "results_form": HomeResultsForm(choices=airports),
-                    "home_airports": home_airports,
+                    "home_airports_form": home_airports_form,
                 },
             )
     return render(
@@ -84,6 +107,6 @@ def home(request):
         "home.html",
         {
             "form": form,
-            "home_airports": home_airports,
+            "home_airports_form": home_airports_form,
         },
     )

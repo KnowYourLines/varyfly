@@ -29,19 +29,19 @@
     </form>
     {% if results_form %}
         <br/>
-        <form action="/save-home" method="post">
+        <form action="/add-home" method="post">
             {% csrf_token %}
             {{ results_form }}
-            <input type="submit" value="Save">
+            <input type="submit" value="Add">
         </form>
     {% endif %}
-    {% if home_airports %}
-        </br>
-        Home Airports:
+    {% if home_airports_form %}
         <br/>
-        {% for iata, name in home_airports.items %}
-            {{ name }} ( {{ iata }} ) <br/>
-        {% endfor %}
+        <form action="/remove-home" method="post">
+            {% csrf_token %}
+            {{ home_airports_form }}
+            <input type="submit" value="Remove">
+        </form>
     {% endif %}
 </div>
 </body>

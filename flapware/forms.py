@@ -14,6 +14,8 @@ class HomeResultsForm(forms.Form):
         widget=forms.CheckboxSelectMultiple, choices=()
     )
 
-    def __init__(self, *, choices):
+    def __init__(self, *, choices, label=None):
         super().__init__()
         self.fields["airports"].choices = choices
+        if label is not None:
+            self.fields["airports"].label = label
