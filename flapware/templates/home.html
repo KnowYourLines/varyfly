@@ -8,7 +8,7 @@
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">Flapware</a>
+  <a class="navbar-brand" href="">Flapware</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -16,7 +16,7 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
-        <a class="nav-link" href="#">Home</a>
+        <a class="nav-link" href="">Home</a>
       </li>
     </ul>
   </div>
@@ -24,21 +24,8 @@
 <div class="container text-center form-group">
     <form action="" method="post">
         {% csrf_token %}
-        {{ form.non_field_errors }}
-        <div class="fieldWrapper">
-            {{ form.city_or_airport.errors }}
-            {{ form.city_or_airport.label_tag }}
-            {{ form.city_or_airport }}
-            <input type="submit" value="Save">
-        </div>
-        <div class="fieldWrapper">
-            {{ form.direct.errors }}
-            {{ form.direct.label_tag }}
-            {{ form.direct }}
-            {{ form.one_way.errors }}
-            {{ form.one_way.label_tag }}
-            {{ form.one_way }}
-        </div>
+        {{ form }}
+        <input type="submit" value="Search">
     </form>
 </div>
 </body>
