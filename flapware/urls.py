@@ -5,8 +5,8 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("save-home", views.save_home, name="save_home"),
     path(
-        "cheapest-destinations",
-        views.cheapest_destinations,
-        name="cheapest_destinations",
+        "recommend-destinations",
+        views.recommend_destinations,
+        name="recommend_destinations",
     ),
 ]

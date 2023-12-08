@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 
@@ -8,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from flapware.forms import HomeSearchForm, HomeResultsForm
-from flapware.helpers import get_home_city
+from flapware.helpers import get_home_city, get_city_iata_for_airport
 
 
 def save_home(request):
@@ -33,12 +34,12 @@ def save_home(request):
     return HttpResponseRedirect("/")
 
 
-async def cheapest_destinations(request):
-    home_airports = await sync_to_async(get_home_city)(request)
-    if not home_airports:
+async def recommend_destinations(request):
+    home_city = await sync_to_async(get_home_city)(request)
+    if not home_city:
         return render(
             request,
-            "no_home_airports.html",
+            "no_home_saved.html",
         )
     async with httpx.AsyncClient() as client:
         try:
@@ -54,27 +55,39 @@ async def cheapest_destinations(request):
             response = response.json()
             access_token = response["access_token"]
             token_type = response["token_type"]
-            for iata, name in home_airports.items():
-                response = await client.get(
-                    f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-destinations",
-                    params={
-                        "origin": iata,
-                    },
-                    headers={"Authorization": f"{token_type} {access_token}"},
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-destinations",
+                params={
+                    "origin": home_city["iata"],
+                },
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            destination_airports = [
+                flight["destination"] for flight in response.json()["data"]
+            ]
+            tasks = []
+            for iata in destination_airports:
+                tasks.append(
+                    asyncio.ensure_future(
+                        get_city_iata_for_airport(
+                            client, token_type, access_token, iata
+                        )
+                    )
                 )
-                response.raise_for_status()
-                response = response.json()
-                logging.info(response)
+
+            cheap_city_iatas = await asyncio.gather(*tasks)
+            logging.info(cheap_city_iatas)
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
-            logging.info(exc.response.text)
+            logging.error(exc.response.text)
             logging.error(
                 f"Error response {exc.response.status_code} while requesting {exc.request.url}."
             )
     return render(
         request,
-        "cheapest_destinations.html",
+        "recommend_destinations.html",
         {},
     )
 
@@ -108,7 +121,7 @@ def home(request):
                         headers={"Authorization": f"{token_type} {access_token}"},
                     )
                     response.raise_for_status()
-                    cities = (
+                    cities = [
                         (
                             f"{city['address']['cityName']},{city['iataCode']},{city['address']['countryCode']},"
                             f"{city['geoCode']['latitude']},{city['geoCode']['longitude']},"
@@ -116,8 +129,8 @@ def home(request):
                             f"{city['address']['cityName']}, {city['address']['countryName']}",
                         )
                         for city in response.json()["data"]
-                        if city["iataCode"] not in home_city
-                    )
+                        if city["iataCode"] != home_city["iata"]
+                    ]
                 except httpx.RequestError as exc:
                     logging.error(
                         f"An error occurred while requesting {exc.request.url}."
@@ -126,13 +139,13 @@ def home(request):
                     logging.error(
                         f"Error response {exc.response.status_code} while requesting {exc.request.url}."
                     )
-
+            results_form = HomeResultsForm(choices=cities) if cities else None
             return render(
                 request,
                 "home.html",
                 {
                     "form": form,
-                    "results_form": HomeResultsForm(choices=cities),
+                    "results_form": results_form,
                     "home_city": home_city,
                 },
             )
