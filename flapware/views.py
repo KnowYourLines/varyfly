@@ -8,7 +8,7 @@ from django.http import HttpResponseRedirect
 
 from django.shortcuts import render
 
-from flapware.forms import HomeSearchForm, HomeResultsForm
+from flapware.forms import HomeSearchForm, HomeResultsForm, CitiesForm
 from flapware.helpers import get_home_city, get_city_iata_for_airport
 
 
@@ -77,7 +77,43 @@ async def recommend_destinations(request):
                 )
 
             cheap_city_iatas = await asyncio.gather(*tasks)
-            logging.info(cheap_city_iatas)
+            cities_for_recommendation = cheap_city_iatas.copy()
+            cities_for_recommendation.append(home_city["iata"])
+            params = {
+                "cityCodes": ",".join(cities_for_recommendation),
+            }
+
+            if home_city["country_code"] in {
+                "FR",
+                "GB",
+                "DE",
+                "IT",
+                "ES",
+                "NL",
+                "US",
+                "AR",
+                "MX",
+                "SA",
+            }:
+                params["travelerCountryCode"] = home_city["country_code"]
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/recommended-locations",
+                params=params,
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            cities = [
+                (
+                    f"{city['name']},{city['iataCode']},{city['geoCode']['latitude']},{city['geoCode']['longitude']},",
+                    f"{city['name']}",
+                )
+                for city in response.json()["data"]
+            ]
+            recommended_cities_form = (
+                CitiesForm(choices=cities, label="Recommended Cities")
+                if cities
+                else None
+            )
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
@@ -88,7 +124,7 @@ async def recommend_destinations(request):
     return render(
         request,
         "recommend_destinations.html",
-        {},
+        {"recommended_cities_form": recommended_cities_form},
     )
 
 
