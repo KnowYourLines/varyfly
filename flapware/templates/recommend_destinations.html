@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load string_helpers %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,7 +30,28 @@
         <br/>
         <form action="/add-cities" method="post">
             {% csrf_token %}
-            {{ recommended_cities_form }}
+            <fieldset>
+                <legend>{{ recommended_cities_form.cities.label }}</legend>
+                {% for city in recommended_cities_form.cities %}
+                <label>
+                    <span class="city">{{ city.tag }}</span>
+                    {{ city.choice_label }}
+                    <br/>
+                    <div class="row">
+                    <div class="col">
+                      <a href="/highlights/{{city.data.value|get_comma_split_index:'1'}}">Highlights</a>
+                    </div>
+                    <div class="col">
+                      <a href="/safety/{{city.data.value|get_comma_split_index:'1'}}">Safety</a>
+                    </div>
+                    <div class="col">
+                      <a href="/busyness/{{city.data.value|get_comma_split_index:'1'}}">Busyness</a>
+                    </div>
+                  </div>
+                </label>
+                <br/>
+                {% endfor %}
+            </fieldset>
             <input type="submit" value="Add">
         </form>
     {% endif %}
@@ -37,7 +59,28 @@
         <br/>
         <form action="/remove-cities" method="post">
             {% csrf_token %}
-            {{ saved_cities_form }}
+            <fieldset>
+                <legend>{{ saved_cities_form.cities.label }}</legend>
+                {% for city in saved_cities_form.cities %}
+                <label>
+                    <span class="city">{{ city.tag }}</span>
+                    {{ city.choice_label }}
+                    <br/>
+                    <div class="row">
+                    <div class="col">
+                      <a href="/highlights/{{city.data.value}}">Highlights</a>
+                    </div>
+                    <div class="col">
+                      <a href="/safety/{{city.data.value}}">Safety</a>
+                    </div>
+                    <div class="col">
+                      <a href="/busyness/{{city.data.value}}">Busyness</a>
+                    </div>
+                  </div>
+                </label>
+                <br/>
+                {% endfor %}
+            </fieldset>
             <input type="submit" value="Remove">
         </form>
     {% endif %}
