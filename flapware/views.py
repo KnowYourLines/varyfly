@@ -127,6 +127,10 @@ async def recommend_destinations(request):
             cheap_city_iatas = await asyncio.gather(*tasks)
             cities_for_recommendation = cheap_city_iatas.copy()
             cities_for_recommendation.append(home_city["iata"])
+            if saved_destinations:
+                cities_for_recommendation = cities_for_recommendation + [
+                    iata for iata, details in saved_destinations.items()
+                ]
             params = {
                 "cityCodes": ",".join(cities_for_recommendation),
             }
@@ -156,6 +160,7 @@ async def recommend_destinations(request):
                     f"{city['name']}",
                 )
                 for city in response.json()["data"]
+                if city["iataCode"] not in cities_for_recommendation
             ]
             recommended_cities_form = (
                 CitiesForm(choices=cities, label="Recommended Cities")
