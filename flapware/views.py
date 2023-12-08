@@ -9,7 +9,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from flapware.forms import HomeSearchForm, HomeResultsForm, CitiesForm
-from flapware.helpers import get_home_city, get_city_iata_for_airport
+from flapware.helpers import (
+    get_home_city,
+    get_city_iata_for_airport,
+    get_saved_destinations,
+)
 
 
 def save_home(request):
@@ -34,8 +38,52 @@ def save_home(request):
     return HttpResponseRedirect("/")
 
 
+def add_cities(request):
+    if request.method == "POST":
+        cities = request.POST.getlist("cities")
+        destinations = request.session.get("saved_destinations", {})
+        for city in cities:
+            city_details = city.split(",")
+            city_name = city_details[0]
+            city_iata = city_details[1]
+            city_latitude = city_details[2]
+            city_longitude = city_details[3]
+            if city_iata not in destinations:
+                destinations[city_iata] = {
+                    "name": city_name,
+                    "latitude": city_latitude,
+                    "longitude": city_longitude,
+                }
+        request.session["saved_destinations"] = destinations
+    return HttpResponseRedirect("/recommend-destinations")
+
+
+def remove_cities(request):
+    if request.method == "POST":
+        cities = request.POST.getlist("cities")
+        saved_destinations = request.session.get("saved_destinations", {})
+        for iata in cities:
+            if iata in saved_destinations:
+                del saved_destinations[iata]
+        request.session["saved_destinations"] = saved_destinations
+    return HttpResponseRedirect("/recommend-destinations")
+
+
 async def recommend_destinations(request):
     home_city = await sync_to_async(get_home_city)(request)
+    saved_destinations = await sync_to_async(get_saved_destinations)(request)
+    saved_cities_choices = (
+        (
+            f"{iata}",
+            f"{details['name']}",
+        )
+        for iata, details in saved_destinations.items()
+    )
+    saved_cities_form = (
+        CitiesForm(choices=saved_cities_choices, label="Saved Cities")
+        if saved_destinations
+        else None
+    )
     if not home_city:
         return render(
             request,
@@ -124,7 +172,10 @@ async def recommend_destinations(request):
     return render(
         request,
         "recommend_destinations.html",
-        {"recommended_cities_form": recommended_cities_form},
+        {
+            "recommended_cities_form": recommended_cities_form,
+            "saved_cities_form": saved_cities_form,
+        },
     )
 
 

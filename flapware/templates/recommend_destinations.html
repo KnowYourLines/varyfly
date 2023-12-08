@@ -33,6 +33,14 @@
             <input type="submit" value="Add">
         </form>
     {% endif %}
+    {% if saved_cities_form %}
+        <br/>
+        <form action="/remove-cities" method="post">
+            {% csrf_token %}
+            {{ saved_cities_form }}
+            <input type="submit" value="Remove">
+        </form>
+    {% endif %}
 </div>
 </body>
 </html>
