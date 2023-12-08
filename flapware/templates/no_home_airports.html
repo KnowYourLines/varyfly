@@ -25,27 +25,7 @@
   </div>
 </nav>
 <div class="container text-center">
-    <form action="" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Search">
-    </form>
-    {% if results_form %}
-        <br/>
-        <form action="/add-home" method="post">
-            {% csrf_token %}
-            {{ results_form }}
-            <input type="submit" value="Add">
-        </form>
-    {% endif %}
-    {% if home_airports_form %}
-        <br/>
-        <form action="/remove-home" method="post">
-            {% csrf_token %}
-            {{ home_airports_form }}
-            <input type="submit" value="Remove">
-        </form>
-    {% endif %}
+    <h1 class="display-1">No <a class="link-primary" href="/">home airports</a> selected</h1>
 </div>
 </body>
 </html>

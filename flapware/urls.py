@@ -5,4 +5,9 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("add-home", views.add_home, name="add_home"),
     path("remove-home", views.remove_home, name="remove_home"),
+    path(
+        "cheapest-destinations",
+        views.cheapest_destinations,
+        name="cheapest_destinations",
+    ),
 ]

@@ -37,6 +37,22 @@ def remove_home(request):
     return HttpResponseRedirect("/")
 
 
+def cheapest_destinations(request):
+    home_airports = get_home_airports(request)
+    if not home_airports:
+        return render(
+            request,
+            "no_home_airports.html",
+        )
+    return render(
+        request,
+        "cheapest_destinations.html",
+        {
+            # "form": form,
+        },
+    )
+
+
 def home(request):
     home_airports = get_home_airports(request)
     if home_airports:
