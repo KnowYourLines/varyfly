@@ -221,7 +221,7 @@ def home(request):
                             f"{city['address']['cityName']}, {city['address']['countryName']}",
                         )
                         for city in response.json()["data"]
-                        if city["iataCode"] != home_city["iata"]
+                        if city["iataCode"] != home_city.get("iata")
                     ]
                 except httpx.RequestError as exc:
                     logging.error(
