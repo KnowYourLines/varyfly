@@ -55,7 +55,7 @@ def add_cities(request):
                     "longitude": city_longitude,
                 }
         request.session["saved_destinations"] = destinations
-    return HttpResponseRedirect("/recommend-destinations")
+    return HttpResponseRedirect("/destinations")
 
 
 def remove_cities(request):
@@ -66,10 +66,10 @@ def remove_cities(request):
             if iata in saved_destinations:
                 del saved_destinations[iata]
         request.session["saved_destinations"] = saved_destinations
-    return HttpResponseRedirect("/recommend-destinations")
+    return HttpResponseRedirect("/destinations")
 
 
-async def recommend_destinations(request):
+async def destinations(request):
     home_city = await sync_to_async(get_home_city)(request)
     saved_destinations = await sync_to_async(get_saved_destinations)(request)
     saved_cities_choices = (
@@ -176,7 +176,7 @@ async def recommend_destinations(request):
             )
     return render(
         request,
-        "recommend_destinations.html",
+        "destinations.html",
         {
             "recommended_cities_form": recommended_cities_form,
             "saved_cities_form": saved_cities_form,
