@@ -8,38 +8,33 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from flapware.forms import HomeSearchForm, HomeResultsForm
-from flapware.helpers import get_home_airports
+from flapware.helpers import get_home_city
 
 
-def add_home(request):
+def save_home(request):
     if request.method == "POST":
-        airports = request.POST.getlist("airports")
-        home_airports = request.session.get("home_airports", {})
-        for airport in airports:
-            airport_details = airport.split(",")
-            airport_name = airport_details[0]
-            airport_iata = airport_details[1]
-            if airport_iata not in home_airports:
-                home_airports[airport_iata] = airport_name
-        request.session["home_airports"] = home_airports
-    return HttpResponseRedirect("/")
-
-
-def remove_home(request):
-    if request.method == "POST":
-        airports = request.POST.getlist("airports")
-        home_airports = request.session.get("home_airports", {})
-        for airport in airports:
-            airport_details = airport.split(",")
-            airport_iata = airport_details[1]
-            if airport_iata in home_airports:
-                del home_airports[airport_iata]
-        request.session["home_airports"] = home_airports
+        city = request.POST.get("city")
+        city_details = city.split(",")
+        city_name = city_details[0]
+        city_iata = city_details[1]
+        city_country_code = city_details[2]
+        city_latitude = city_details[3]
+        city_longitude = city_details[4]
+        city_country_name = city_details[5]
+        home_city = {
+            "iata": city_iata,
+            "name": city_name,
+            "country_code": city_country_code,
+            "latitude": city_latitude,
+            "longitude": city_longitude,
+            "country_name": city_country_name,
+        }
+        request.session["home_city"] = home_city
     return HttpResponseRedirect("/")
 
 
 async def cheapest_destinations(request):
-    home_airports = await sync_to_async(get_home_airports)(request)
+    home_airports = await sync_to_async(get_home_city)(request)
     if not home_airports:
         return render(
             request,
@@ -85,20 +80,7 @@ async def cheapest_destinations(request):
 
 
 def home(request):
-    home_airports = get_home_airports(request)
-    if home_airports:
-        home_airports_choices = (
-            (
-                f"{name},{iata}",
-                f"{name} ({iata})",
-            )
-            for iata, name in home_airports.items()
-        )
-        home_airports_form = HomeResultsForm(
-            choices=home_airports_choices, label="Home Airports"
-        )
-    else:
-        home_airports_form = None
+    home_city = get_home_city(request)
     form = HomeSearchForm()
     if request.method == "POST":
         form = HomeSearchForm(request.POST)
@@ -120,19 +102,21 @@ def home(request):
                     response = client.get(
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
                         params={
-                            "subType": "AIRPORT",
-                            "keyword": form.cleaned_data["city_or_airport"],
+                            "subType": "CITY",
+                            "keyword": form.cleaned_data["city"],
                         },
                         headers={"Authorization": f"{token_type} {access_token}"},
                     )
                     response.raise_for_status()
-                    airports = (
+                    cities = (
                         (
-                            f"{airport['name']},{airport['iataCode']}",
-                            f"{airport['name']} ({airport['address']['cityName']}, {airport['address']['countryName']})",
+                            f"{city['address']['cityName']},{city['iataCode']},{city['address']['countryCode']},"
+                            f"{city['geoCode']['latitude']},{city['geoCode']['longitude']},"
+                            f"{city['address']['countryName']}",
+                            f"{city['address']['cityName']}, {city['address']['countryName']}",
                         )
-                        for airport in response.json()["data"]
-                        if airport["iataCode"] not in home_airports
+                        for city in response.json()["data"]
+                        if city["iataCode"] not in home_city
                     )
                 except httpx.RequestError as exc:
                     logging.error(
@@ -148,8 +132,8 @@ def home(request):
                 "home.html",
                 {
                     "form": form,
-                    "results_form": HomeResultsForm(choices=airports),
-                    "home_airports_form": home_airports_form,
+                    "results_form": HomeResultsForm(choices=cities),
+                    "home_city": home_city,
                 },
             )
     return render(
@@ -157,6 +141,6 @@ def home(request):
         "home.html",
         {
             "form": form,
-            "home_airports_form": home_airports_form,
+            "home_city": home_city,
         },
     )

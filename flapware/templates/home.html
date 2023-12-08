@@ -32,19 +32,15 @@
     </form>
     {% if results_form %}
         <br/>
-        <form action="/add-home" method="post">
+        <form action="/save-home" method="post">
             {% csrf_token %}
             {{ results_form }}
-            <input type="submit" value="Add">
+            <input type="submit" value="Save">
         </form>
     {% endif %}
-    {% if home_airports_form %}
+    {% if home_city %}
         <br/>
-        <form action="/remove-home" method="post">
-            {% csrf_token %}
-            {{ home_airports_form }}
-            <input type="submit" value="Remove">
-        </form>
+        Current home city: {{ home_city.name }}, {{ home_city.country_name }}
     {% endif %}
 </div>
 </body>

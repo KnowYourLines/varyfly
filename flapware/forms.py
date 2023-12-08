@@ -2,7 +2,11 @@ from django import forms
 
 
 class HomeSearchForm(forms.Form):
-    city_or_airport = forms.CharField(label="Home city or airport", min_length=1)
+    city = forms.CharField(
+        label="",
+        min_length=1,
+        widget=forms.TextInput(attrs={"placeholder": "Search for home city"}),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -10,12 +14,10 @@ class HomeSearchForm(forms.Form):
 
 
 class HomeResultsForm(forms.Form):
-    airports = forms.MultipleChoiceField(
-        widget=forms.CheckboxSelectMultiple, choices=()
-    )
+    city = forms.ChoiceField(widget=forms.RadioSelect, choices=())
 
     def __init__(self, *, choices, label=None):
         super().__init__()
-        self.fields["airports"].choices = choices
+        self.fields["city"].choices = choices
         if label is not None:
-            self.fields["airports"].label = label
+            self.fields["city"].label = label

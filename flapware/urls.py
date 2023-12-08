@@ -3,8 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("add-home", views.add_home, name="add_home"),
-    path("remove-home", views.remove_home, name="remove_home"),
+    path("save-home", views.save_home, name="save_home"),
     path(
         "cheapest-destinations",
         views.cheapest_destinations,

@@ -1,2 +1,2 @@
-def get_home_airports(request):
-    return request.session.get("home_airports", {})
+def get_home_city(request):
+    return request.session.get("home_city", {})
