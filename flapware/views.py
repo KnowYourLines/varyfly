@@ -2,6 +2,7 @@ import logging
 import os
 
 import httpx
+from asgiref.sync import sync_to_async
 from django.http import HttpResponseRedirect
 
 from django.shortcuts import render
@@ -37,19 +38,49 @@ def remove_home(request):
     return HttpResponseRedirect("/")
 
 
-def cheapest_destinations(request):
-    home_airports = get_home_airports(request)
+async def cheapest_destinations(request):
+    home_airports = await sync_to_async(get_home_airports)(request)
     if not home_airports:
         return render(
             request,
             "no_home_airports.html",
         )
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
+                data={
+                    "grant_type": "client_credentials",
+                    "client_id": os.environ.get("AMADEUS_API_KEY"),
+                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
+                },
+            )
+            response.raise_for_status()
+            response = response.json()
+            access_token = response["access_token"]
+            token_type = response["token_type"]
+            for iata, name in home_airports.items():
+                response = await client.get(
+                    f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-destinations",
+                    params={
+                        "origin": iata,
+                    },
+                    headers={"Authorization": f"{token_type} {access_token}"},
+                )
+                response.raise_for_status()
+                response = response.json()
+                logging.info(response)
+        except httpx.RequestError as exc:
+            logging.error(f"An error occurred while requesting {exc.request.url}.")
+        except httpx.HTTPStatusError as exc:
+            logging.info(exc.response.text)
+            logging.error(
+                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
+            )
     return render(
         request,
         "cheapest_destinations.html",
-        {
-            # "form": form,
-        },
+        {},
     )
 
 
