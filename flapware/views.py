@@ -15,6 +15,7 @@ from flapware.helpers import (
     get_city_iata_for_airport,
     get_saved_destinations,
     get_destination_cities_for_airport,
+    get_location_scores_for_city,
 )
 
 
@@ -54,7 +55,7 @@ def save_home(request):
                 response.raise_for_status()
                 airports = [
                     airport["iataCode"]
-                    for airport in response.json()["data"]
+                    for airport in response.json().get("data", [])
                     if airport["address"]["cityCode"] == city_iata
                 ]
             except httpx.RequestError as exc:
@@ -195,6 +196,16 @@ async def destinations(request):
                     if city["iataCode"] not in added_cities:
                         added_cities.add(city["iataCode"])
                         cities.append(city)
+            tasks = []
+            for city in cities:
+                tasks.append(
+                    asyncio.ensure_future(
+                        get_location_scores_for_city(
+                            client, token_type, access_token, city
+                        )
+                    )
+                )
+            cities = await asyncio.gather(*tasks)
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
@@ -244,7 +255,7 @@ def home(request):
                             f"{city['address']['countryName']}",
                             f"{city['address']['cityName']}, {city['address']['countryName']}",
                         )
-                        for city in response.json()["data"]
+                        for city in response.json().get("data", [])
                         if city["iataCode"] != home_city.get("iata")
                     ]
                 except httpx.RequestError as exc:

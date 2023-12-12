@@ -36,7 +36,7 @@
                 <br/>
                 <div class="row">
                     <div class="col">
-                      <a href="/sights/?latitude={{city.geoCode.latitude}}&longitude={{city.geoCode.longitude}}">Sights</a>
+                        <a href="/sights/?latitude={{city.geoCode.latitude}}&longitude={{city.geoCode.longitude}}">Sights</a>{% if city.location_scores.sight.overall %} - <span style="color:rgb{{city.location_scores.sight.overall|get_safety_colour}}">{{city.location_scores.sight.overall}}</span>{% endif %}
                     </div>
                     <div class="col">
                       <a href="/nightlife/?latitude={{city.geoCode.latitude}}&longitude={{city.geoCode.longitude}}">Nightlife</a>

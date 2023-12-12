@@ -6,13 +6,6 @@ register = template.Library()
 
 @register.filter(is_safe=True)
 @stringfilter
-def get_comma_split_index(value, index):
-    index = int(index)
-    return value.split(",")[index]
-
-
-@register.filter(is_safe=True)
-@stringfilter
 def get_safety_colour(safety_rating):
     pct = int(safety_rating) / 100
     pct_diff = 1.0 - pct
