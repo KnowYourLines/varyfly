@@ -14,6 +14,7 @@ from flapware.helpers import (
     get_home_city,
     get_city_iata_for_airport,
     get_saved_destinations,
+    get_destination_cities_for_airport,
 )
 
 
@@ -189,67 +190,29 @@ async def destinations(request):
             response = response.json()
             access_token = response["access_token"]
             token_type = response["token_type"]
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-destinations",
-                params={
-                    "origin": home_city["iata"],
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            destination_airports = [
-                flight["destination"] for flight in response.json()["data"]
-            ]
             tasks = []
-            for iata in destination_airports:
+            for iata in home_city["airports"]:
                 tasks.append(
                     asyncio.ensure_future(
-                        get_city_iata_for_airport(
+                        get_destination_cities_for_airport(
                             client, token_type, access_token, iata
                         )
                     )
                 )
 
-            cheap_city_iatas = await asyncio.gather(*tasks)
-            cities_for_recommendation = cheap_city_iatas.copy()
-            cities_for_recommendation.append(home_city["iata"])
-            if saved_destinations:
-                cities_for_recommendation = cities_for_recommendation + [
-                    iata for iata, details in saved_destinations.items()
-                ]
-            countries = [country.alpha_2 for country in pycountry.countries]
-            params = {
-                "cityCodes": ",".join(cities_for_recommendation),
-                "destinationCountryCodes": ",".join(countries),
-            }
-
-            if home_city["country_code"] in {
-                "FR",
-                "GB",
-                "DE",
-                "IT",
-                "ES",
-                "NL",
-                "US",
-                "AR",
-                "MX",
-                "SA",
-            }:
-                params["travelerCountryCode"] = home_city["country_code"]
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/recommended-locations",
-                params=params,
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            cities = [
-                (
-                    f"{city['name']},{city['iataCode']},{city['geoCode']['latitude']},{city['geoCode']['longitude']},",
-                    f"{city['name']}",
-                )
-                for city in response.json()["data"]
-                if city["iataCode"] not in cities_for_recommendation
-            ]
+            destinations_for_home_airports = await asyncio.gather(*tasks)
+            cities = []
+            added_cities = set()
+            for airport_destinations in destinations_for_home_airports:
+                for city in airport_destinations:
+                    if city["iataCode"] not in added_cities:
+                        added_cities.add(city["iataCode"])
+                        cities.append(
+                            (
+                                f"{city['name']},{city['iataCode']},{city['geoCode']['latitude']},{city['geoCode']['longitude']},",
+                                f"{city['name']}",
+                            )
+                        )
             recommended_cities_form = (
                 CitiesForm(choices=cities, label="Recommended Cities")
                 if cities
