@@ -9,3 +9,14 @@ register = template.Library()
 def get_comma_split_index(value, index):
     index = int(index)
     return value.split(",")[index]
+
+
+@register.filter(is_safe=True)
+@stringfilter
+def get_safety_colour(safety_rating):
+    pct = int(safety_rating) / 100
+    pct_diff = 1.0 - pct
+    red_color = min(255, int(pct_diff * 2 * 255))
+    green_color = min(255, int(pct * 2 * 255))
+    col = (red_color, green_color, 0)
+    return col

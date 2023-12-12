@@ -28,12 +28,12 @@
     </div>
 </nav>
 <div class="container text-center">
-    <table class="table">
+    <table class="table table-dark table-striped">
       <thead>
         <tr>
             <th scope="col">Area</th>
             <th scope="col">Overall Safety</th>
-            <th scope="col">Health</th>
+            <th scope="col">Health Concerns</th>
             <th scope="col">LGBTQ Safety</th>
             <th scope="col">Physical Threats</th>
             <th scope="col">Theft</th>
@@ -45,13 +45,13 @@
       {% for area in areas %}
         <tr>
             <th scope="row"><a target="_blank" href="https://www.google.com/maps/search/?api=1&query={{ area.geoCode.latitude }}%2C{{ area.geoCode.longitude }}">{{ area.subType }}: {{ area.name }}</a></th>
-            <td>{{ area.safetyScores.overall }}</td>
-            <td>{{ area.safetyScores.medical }}</td>
-            <td>{{ area.safetyScores.lgbtq }}</td>
-            <td>{{ area.safetyScores.physicalHarm }}</td>
-            <td>{{ area.safetyScores.theft }}</td>
-            <td>{{ area.safetyScores.politicalFreedom }}</td>
-            <td>{{ area.safetyScores.women }}</td>
+            <td style="color:rgb{{area.safetyScores.overall|get_safety_colour}}">{{ area.safetyScores.overall }}</td>
+            <td style="color:rgb{{area.safetyScores.medical|get_safety_colour}}">{{ area.safetyScores.medical }}</td>
+            <td style="color:rgb{{area.safetyScores.lgbtq|get_safety_colour}}">{{ area.safetyScores.lgbtq }}</td>
+            <td style="color:rgb{{area.safetyScores.physicalHarm|get_safety_colour}}">{{ area.safetyScores.physicalHarm }}</td>
+            <td style="color:rgb{{area.safetyScores.theft|get_safety_colour}}">{{ area.safetyScores.theft }}</td>
+            <td style="color:rgb{{area.safetyScores.politicalFreedom|get_safety_colour}}">{{ area.safetyScores.politicalFreedom }}</td>
+            <td style="color:rgb{{area.safetyScores.women|get_safety_colour}}">{{ area.safetyScores.women }}</td>
         </tr>
       {% endfor %}
       </tbody>
