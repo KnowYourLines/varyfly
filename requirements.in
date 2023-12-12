@@ -4,4 +4,3 @@ dj-database-url
 whitenoise[brotli]
 daphne
 httpx
-pycountry

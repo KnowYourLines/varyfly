@@ -21,13 +21,3 @@ class HomeResultsForm(forms.Form):
         self.fields["city"].choices = choices
         if label is not None:
             self.fields["city"].label = label
-
-
-class CitiesForm(forms.Form):
-    cities = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, choices=())
-
-    def __init__(self, *, choices, label=None):
-        super().__init__()
-        self.fields["cities"].choices = choices
-        if label is not None:
-            self.fields["cities"].label = label

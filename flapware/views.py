@@ -3,17 +3,14 @@ import logging
 import os
 
 import httpx
-import pycountry
 from asgiref.sync import sync_to_async
 from django.http import HttpResponseRedirect
 
 from django.shortcuts import render
 
-from flapware.forms import HomeSearchForm, HomeResultsForm, CitiesForm
+from flapware.forms import HomeSearchForm, HomeResultsForm
 from flapware.helpers import (
     get_home_city,
-    get_city_iata_for_airport,
-    get_saved_destinations,
     get_destination_cities_for_airport,
     get_location_scores_for_city,
 )
