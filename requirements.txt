@@ -27,6 +27,7 @@ incremental==22.10.0
 psycopg2==2.9.9
 pyasn1==0.5.1
 pyasn1-modules==0.3.0
+pycountry==23.12.11
 pycparser==2.21
 pyopenssl==23.3.0
 service-identity==23.1.0

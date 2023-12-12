@@ -3,6 +3,7 @@ import logging
 import os
 
 import httpx
+import pycountry
 from asgiref.sync import sync_to_async
 from django.http import HttpResponseRedirect
 
@@ -180,8 +181,10 @@ async def destinations(request):
                 cities_for_recommendation = cities_for_recommendation + [
                     iata for iata, details in saved_destinations.items()
                 ]
+            countries = [country.alpha_2 for country in pycountry.countries]
             params = {
                 "cityCodes": ",".join(cities_for_recommendation),
+                "destinationCountryCodes": ",".join(countries),
             }
 
             if home_city["country_code"] in {
@@ -219,18 +222,17 @@ async def destinations(request):
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
-            logging.error(exc.response.text)
             logging.error(
                 f"Error response {exc.response.status_code} while requesting {exc.request.url}."
             )
-    return render(
-        request,
-        "destinations.html",
-        {
-            "recommended_cities_form": recommended_cities_form,
-            "saved_cities_form": saved_cities_form,
-        },
-    )
+        return render(
+            request,
+            "destinations.html",
+            {
+                "recommended_cities_form": recommended_cities_form,
+                "saved_cities_form": saved_cities_form,
+            },
+        )
 
 
 def home(request):
