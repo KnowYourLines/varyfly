@@ -55,18 +55,20 @@ def add_cities(request):
                     "longitude": city_longitude,
                 }
         request.session["saved_destinations"] = destinations
-    return HttpResponseRedirect("/destinations")
+    return HttpResponseRedirect("/destinations/")
 
 
 def remove_cities(request):
     if request.method == "POST":
         cities = request.POST.getlist("cities")
         saved_destinations = request.session.get("saved_destinations", {})
-        for iata in cities:
+        for city in cities:
+            city_details = city.split(",")
+            iata = city_details[0]
             if iata in saved_destinations:
                 del saved_destinations[iata]
         request.session["saved_destinations"] = saved_destinations
-    return HttpResponseRedirect("/destinations")
+    return HttpResponseRedirect("/destinations/")
 
 
 def safety(request):
