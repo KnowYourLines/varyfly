@@ -28,6 +28,35 @@
     </div>
 </nav>
 <div class="container text-center">
+    <table class="table">
+      <thead>
+        <tr>
+            <th scope="col">Area</th>
+            <th scope="col">Overall Safety</th>
+            <th scope="col">Health</th>
+            <th scope="col">LGBTQ Safety</th>
+            <th scope="col">Physical Threats</th>
+            <th scope="col">Theft</th>
+            <th scope="col">Political Freedom</th>
+            <th scope="col">Women's Safety</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for area in areas %}
+        <tr>
+            <th scope="row"><a target="_blank" href="https://www.google.com/maps/search/?api=1&query={{ area.geoCode.latitude }}%2C{{ area.geoCode.longitude }}">{{ area.subType }}: {{ area.name }}</a></th>
+            <td>{{ area.safetyScores.overall }}</td>
+            <td>{{ area.safetyScores.medical }}</td>
+            <td>{{ area.safetyScores.lgbtq }}</td>
+            <td>{{ area.safetyScores.physicalHarm }}</td>
+            <td>{{ area.safetyScores.theft }}</td>
+            <td>{{ area.safetyScores.politicalFreedom }}</td>
+            <td>{{ area.safetyScores.women }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </body>
