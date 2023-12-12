@@ -46,7 +46,7 @@
                               <a href="/highlights/{{city.data.value|get_comma_split_index:'1'}}/">Highlights</a>
                             </div>
                             <div class="col">
-                              <a href="/safety/{{city.data.value|get_comma_split_index:'1'}}/">Safety</a>
+                              <a href="/safety/?latitude={{city.data.value|get_comma_split_index:'2'}}&longitude={{city.data.value|get_comma_split_index:'3'}}">Safety</a>
                             </div>
                           </div>
                         </label>
@@ -74,7 +74,7 @@
                               <a href="/highlights/{{city.data.value}}/">Highlights</a>
                             </div>
                             <div class="col">
-                              <a href="/safety/{{city.data.value}}/">Safety</a>
+                              <a href="/safety/?latitude={{city.data.value|get_comma_split_index:'1'}}&longitude={{city.data.value|get_comma_split_index:'2'}}">Safety</a>
                             </div>
                           </div>
                         </label>

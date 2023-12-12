@@ -69,12 +69,20 @@ def remove_cities(request):
     return HttpResponseRedirect("/destinations")
 
 
+def safety(request):
+    return render(
+        request,
+        "safety.html",
+        {},
+    )
+
+
 async def destinations(request):
     home_city = await sync_to_async(get_home_city)(request)
     saved_destinations = await sync_to_async(get_saved_destinations)(request)
     saved_cities_choices = (
         (
-            f"{iata}",
+            f"{iata},{details['latitude']},{details['longitude']}",
             f"{details['name']}",
         )
         for iata, details in saved_destinations.items()
