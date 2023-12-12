@@ -158,19 +158,6 @@ def safety(request):
 
 async def destinations(request):
     home_city = await sync_to_async(get_home_city)(request)
-    saved_destinations = await sync_to_async(get_saved_destinations)(request)
-    saved_cities_choices = (
-        (
-            f"{iata},{details['latitude']},{details['longitude']}",
-            f"{details['name']}",
-        )
-        for iata, details in saved_destinations.items()
-    )
-    saved_cities_form = (
-        CitiesForm(choices=saved_cities_choices, label="Saved Cities")
-        if saved_destinations
-        else None
-    )
     if not home_city:
         return render(
             request,
@@ -207,17 +194,7 @@ async def destinations(request):
                 for city in airport_destinations:
                     if city["iataCode"] not in added_cities:
                         added_cities.add(city["iataCode"])
-                        cities.append(
-                            (
-                                f"{city['name']},{city['iataCode']},{city['geoCode']['latitude']},{city['geoCode']['longitude']},",
-                                f"{city['name']}",
-                            )
-                        )
-            recommended_cities_form = (
-                CitiesForm(choices=cities, label="Recommended Cities")
-                if cities
-                else None
-            )
+                        cities.append(city)
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
@@ -227,10 +204,7 @@ async def destinations(request):
         return render(
             request,
             "destinations.html",
-            {
-                "recommended_cities_form": recommended_cities_form,
-                "saved_cities_form": saved_cities_form,
-            },
+            {"cities": cities},
         )
 
 
