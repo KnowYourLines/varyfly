@@ -43,7 +43,16 @@
                             <br/>
                             <div class="row">
                             <div class="col">
-                              <a href="/highlights/{{city.data.value|get_comma_split_index:'1'}}/">Highlights</a>
+                              <a href="/sights/?latitude={{city.data.value|get_comma_split_index:'2'}}&longitude={{city.data.value|get_comma_split_index:'3'}}">Sights</a>
+                            </div>
+                            <div class="col">
+                              <a href="/nightlife/?latitude={{city.data.value|get_comma_split_index:'2'}}&longitude={{city.data.value|get_comma_split_index:'3'}}">Nightlife</a>
+                            </div>
+                            <div class="col">
+                              <a href="/restaurants/?latitude={{city.data.value|get_comma_split_index:'2'}}&longitude={{city.data.value|get_comma_split_index:'3'}}">Restaurants</a>
+                            </div>
+                            <div class="col">
+                              <a href="/shopping/?latitude={{city.data.value|get_comma_split_index:'2'}}&longitude={{city.data.value|get_comma_split_index:'3'}}">Shopping</a>
                             </div>
                             <div class="col">
                               <a href="/safety/?latitude={{city.data.value|get_comma_split_index:'2'}}&longitude={{city.data.value|get_comma_split_index:'3'}}">Safety</a>
@@ -71,7 +80,16 @@
                             <br/>
                             <div class="row">
                             <div class="col">
-                              <a href="/highlights/{{city.data.value}}/">Highlights</a>
+                              <a href="/sights/?latitude={{city.data.value|get_comma_split_index:'1'}}&longitude={{city.data.value|get_comma_split_index:'2'}}">Sights</a>
+                            </div>
+                            <div class="col">
+                              <a href="/nightlife/?latitude={{city.data.value|get_comma_split_index:'1'}}&longitude={{city.data.value|get_comma_split_index:'2'}}">Nightlife</a>
+                            </div>
+                            <div class="col">
+                              <a href="/restaurants/?latitude={{city.data.value|get_comma_split_index:'1'}}&longitude={{city.data.value|get_comma_split_index:'2'}}">Restaurants</a>
+                            </div>
+                            <div class="col">
+                              <a href="/shopping/?latitude={{city.data.value|get_comma_split_index:'1'}}&longitude={{city.data.value|get_comma_split_index:'2'}}">Shopping</a>
                             </div>
                             <div class="col">
                               <a href="/safety/?latitude={{city.data.value|get_comma_split_index:'1'}}&longitude={{city.data.value|get_comma_split_index:'2'}}">Safety</a>
