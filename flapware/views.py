@@ -27,6 +27,41 @@ def save_home(request):
         city_latitude = city_details[3]
         city_longitude = city_details[4]
         city_country_name = city_details[5]
+        with httpx.Client() as client:
+            try:
+                response = client.post(
+                    f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
+                    data={
+                        "grant_type": "client_credentials",
+                        "client_id": os.environ.get("AMADEUS_API_KEY"),
+                        "client_secret": os.environ.get("AMADEUS_API_SECRET"),
+                    },
+                )
+                response.raise_for_status()
+                response = response.json()
+                access_token = response["access_token"]
+                token_type = response["token_type"]
+                response = client.get(
+                    f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
+                    params={
+                        "subType": "AIRPORT",
+                        "keyword": city_name,
+                        "countryCode": city_country_code,
+                    },
+                    headers={"Authorization": f"{token_type} {access_token}"},
+                )
+                response.raise_for_status()
+                airports = [
+                    airport["iataCode"]
+                    for airport in response.json()["data"]
+                    if airport["address"]["cityCode"] == city_iata
+                ]
+            except httpx.RequestError as exc:
+                logging.error(f"An error occurred while requesting {exc.request.url}.")
+            except httpx.HTTPStatusError as exc:
+                logging.error(
+                    f"Error response {exc.response.status_code} while requesting {exc.request.url}."
+                )
         home_city = {
             "iata": city_iata,
             "name": city_name,
@@ -34,6 +69,7 @@ def save_home(request):
             "latitude": city_latitude,
             "longitude": city_longitude,
             "country_name": city_country_name,
+            "airports": airports,
         }
         request.session["home_city"] = home_city
     return HttpResponseRedirect("/")
