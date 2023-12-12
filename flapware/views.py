@@ -12,7 +12,6 @@ from flapware.forms import HomeSearchForm, HomeResultsForm
 from flapware.helpers import (
     get_home_city,
     get_destination_cities_for_airport,
-    get_location_scores_for_city,
 )
 
 
@@ -128,6 +127,7 @@ def safety(request):
                     "latitude": float(request.GET.get("latitude")),
                     "longitude": float(request.GET.get("longitude")),
                     "radius": 20,
+                    "page[limit]": 10000,
                 },
                 headers={"Authorization": f"{token_type} {access_token}"},
             )
@@ -193,16 +193,6 @@ async def destinations(request):
                     if city["iataCode"] not in added_cities:
                         added_cities.add(city["iataCode"])
                         cities.append(city)
-            tasks = []
-            for city in cities:
-                tasks.append(
-                    asyncio.ensure_future(
-                        get_location_scores_for_city(
-                            client, token_type, access_token, city
-                        )
-                    )
-                )
-            cities = await asyncio.gather(*tasks)
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
