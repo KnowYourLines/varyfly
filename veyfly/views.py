@@ -126,6 +126,13 @@ def safety(request):
             city_data = response.json().get("data")
             if city_data:
                 city = city_data[0]
+                if not city.get("geoCode"):
+                    city = {
+                        "geoCode": {
+                            "latitude": float(request.GET.get("latitude")),
+                            "longitude": float(request.GET.get("longitude")),
+                        }
+                    }
             else:
                 city = {
                     "geoCode": {
