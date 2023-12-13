@@ -8,8 +8,8 @@ from django.http import HttpResponseRedirect
 
 from django.shortcuts import render
 
-from flapware.forms import HomeSearchForm, HomeResultsForm
-from flapware.helpers import (
+from veyfly.forms import HomeSearchForm, HomeResultsForm
+from veyfly.helpers import (
     get_home_city,
     get_destination_cities_for_airport,
     async_access_token_and_type,
