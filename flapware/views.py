@@ -14,9 +14,7 @@ from flapware.helpers import (
     get_destination_cities_for_airport,
     async_access_token_and_type,
     access_token_and_type,
-    get_city,
-    get_category_scores,
-    get_pois,
+    pois_and_scores,
 )
 
 
@@ -52,7 +50,7 @@ def save_home(request):
                 logging.error(f"An error occurred while requesting {exc.request.url}.")
             except httpx.HTTPStatusError as exc:
                 logging.error(
-                    f"Error response {exc.response.status_code} while requesting {exc.request.url}."
+                    f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
                 )
         home_city = {
             "iata": city_iata,
@@ -101,22 +99,10 @@ def remove_cities(request):
 
 
 async def sights(request):
-    async with httpx.AsyncClient() as client:
-        try:
-            token_type, access_token = await async_access_token_and_type(client)
-            city, city_name = await get_city(client, token_type, access_token, request)
-            sight_scores = await get_category_scores(
-                "sight", city, client, token_type, access_token
-            )
-            pois = await get_pois(
-                "SIGHTS", city, city_name, client, token_type, access_token
-            )
-        except httpx.RequestError as exc:
-            logging.error(f"An error occurred while requesting {exc.request.url}.")
-        except httpx.HTTPStatusError as exc:
-            logging.error(
-                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
-            )
+    (
+        pois,
+        sight_scores,
+    ) = pois_and_scores("SIGHTS", "sight", request)
     return render(
         request,
         "sights.html",
@@ -125,22 +111,10 @@ async def sights(request):
 
 
 async def shopping(request):
-    async with httpx.AsyncClient() as client:
-        try:
-            token_type, access_token = await async_access_token_and_type(client)
-            city, city_name = await get_city(client, token_type, access_token, request)
-            scores = await get_category_scores(
-                "shopping", city, client, token_type, access_token
-            )
-            pois = await get_pois(
-                "SHOPPING", city, city_name, client, token_type, access_token
-            )
-        except httpx.RequestError as exc:
-            logging.error(f"An error occurred while requesting {exc.request.url}.")
-        except httpx.HTTPStatusError as exc:
-            logging.error(
-                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
-            )
+    (
+        pois,
+        scores,
+    ) = pois_and_scores("SHOPPING", "shopping", request)
     return render(
         request,
         "shopping.html",
@@ -149,22 +123,10 @@ async def shopping(request):
 
 
 async def restaurants(request):
-    async with httpx.AsyncClient() as client:
-        try:
-            token_type, access_token = await async_access_token_and_type(client)
-            city, city_name = await get_city(client, token_type, access_token, request)
-            scores = await get_category_scores(
-                "restaurant", city, client, token_type, access_token
-            )
-            pois = await get_pois(
-                "RESTAURANT", city, city_name, client, token_type, access_token
-            )
-        except httpx.RequestError as exc:
-            logging.error(f"An error occurred while requesting {exc.request.url}.")
-        except httpx.HTTPStatusError as exc:
-            logging.error(
-                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
-            )
+    (
+        pois,
+        scores,
+    ) = pois_and_scores("RESTAURANT", "restaurant", request)
     return render(
         request,
         "restaurants.html",
@@ -173,22 +135,10 @@ async def restaurants(request):
 
 
 async def nightlife(request):
-    async with httpx.AsyncClient() as client:
-        try:
-            token_type, access_token = await async_access_token_and_type(client)
-            city, city_name = await get_city(client, token_type, access_token, request)
-            scores = await get_category_scores(
-                "nightLife", city, client, token_type, access_token
-            )
-            pois = await get_pois(
-                "NIGHTLIFE", city, city_name, client, token_type, access_token
-            )
-        except httpx.RequestError as exc:
-            logging.error(f"An error occurred while requesting {exc.request.url}.")
-        except httpx.HTTPStatusError as exc:
-            logging.error(
-                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
-            )
+    (
+        pois,
+        scores,
+    ) = pois_and_scores("NIGHTLIFE", "nightLife", request)
     return render(
         request,
         "nightlife.html",
@@ -241,7 +191,7 @@ def safety(request):
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
             logging.error(
-                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
+                f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
             )
     return render(
         request,
@@ -282,7 +232,7 @@ async def destinations(request):
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
             logging.error(
-                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
+                f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
             )
         return render(
             request,
@@ -325,7 +275,7 @@ def home(request):
                     )
                 except httpx.HTTPStatusError as exc:
                     logging.error(
-                        f"Error response {exc.response.status_code} while requesting {exc.request.url}."
+                        f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
                     )
             results_form = HomeResultsForm(choices=cities) if cities else None
             return render(
