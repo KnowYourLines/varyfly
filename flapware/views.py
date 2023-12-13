@@ -14,6 +14,7 @@ from flapware.helpers import (
     get_destination_cities_for_airport,
     async_access_token_and_type,
     access_token_and_type,
+    get_city,
 )
 
 
@@ -101,23 +102,7 @@ async def sights(request):
     async with httpx.AsyncClient() as client:
         try:
             token_type, access_token = await async_access_token_and_type(client)
-            full_city_name = request.GET.get("city_name", "").split(" ")
-            city_name = full_city_name[0]
-            for word in full_city_name[1:]:
-                if len(city_name + " " + word) > 10:
-                    break
-                city_name += " " + word
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
-                params={
-                    "keyword": city_name,
-                    "countryCode": request.GET.get("country_code"),
-                    "max": 1,
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            city = response.json()["data"][0]
+            city, city_name = await get_city(client, token_type, access_token, request)
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
                 params={
@@ -170,23 +155,7 @@ async def shopping(request):
     async with httpx.AsyncClient() as client:
         try:
             token_type, access_token = await async_access_token_and_type(client)
-            full_city_name = request.GET.get("city_name", "").split(" ")
-            city_name = full_city_name[0]
-            for word in full_city_name[1:]:
-                if len(city_name + " " + word) > 10:
-                    break
-                city_name += " " + word
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
-                params={
-                    "keyword": city_name,
-                    "countryCode": request.GET.get("country_code"),
-                    "max": 1,
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            city = response.json()["data"][0]
+            city, city_name = await get_city(client, token_type, access_token, request)
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
                 params={
@@ -239,23 +208,7 @@ async def restaurants(request):
     async with httpx.AsyncClient() as client:
         try:
             token_type, access_token = await async_access_token_and_type(client)
-            full_city_name = request.GET.get("city_name", "").split(" ")
-            city_name = full_city_name[0]
-            for word in full_city_name[1:]:
-                if len(city_name + " " + word) > 10:
-                    break
-                city_name += " " + word
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
-                params={
-                    "keyword": city_name,
-                    "countryCode": request.GET.get("country_code"),
-                    "max": 1,
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            city = response.json()["data"][0]
+            city, city_name = await get_city(client, token_type, access_token, request)
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
                 params={
@@ -308,23 +261,7 @@ async def nightlife(request):
     async with httpx.AsyncClient() as client:
         try:
             token_type, access_token = await async_access_token_and_type(client)
-            full_city_name = request.GET.get("city_name", "").split(" ")
-            city_name = full_city_name[0]
-            for word in full_city_name[1:]:
-                if len(city_name + " " + word) > 10:
-                    break
-                city_name += " " + word
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
-                params={
-                    "keyword": city_name,
-                    "countryCode": request.GET.get("country_code"),
-                    "max": 1,
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            city = response.json()["data"][0]
+            city, city_name = await get_city(client, token_type, access_token, request)
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
                 params={

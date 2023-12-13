@@ -49,3 +49,24 @@ def access_token_and_type(client):
     access_token = response["access_token"]
     token_type = response["token_type"]
     return token_type, access_token
+
+
+async def get_city(client, token_type, access_token, request):
+    full_city_name = request.GET.get("city_name", "").split(" ")
+    city_name = full_city_name[0]
+    for word in full_city_name[1:]:
+        if len(city_name + " " + word) > 10:
+            break
+        city_name += " " + word
+    response = await client.get(
+        f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
+        params={
+            "keyword": city_name,
+            "countryCode": request.GET.get("country_code"),
+            "max": 1,
+        },
+        headers={"Authorization": f"{token_type} {access_token}"},
+    )
+    response.raise_for_status()
+    city = response.json()["data"][0]
+    return city, city_name
