@@ -107,6 +107,8 @@ def safety(request):
                 if len(city_name + " " + word) > 10:
                     break
                 city_name += " " + word
+            if city_name == "MARRAKECH":
+                city_name = "MARRAKESH"
             response = client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
                 params={
@@ -138,6 +140,12 @@ def safety(request):
                 )
                 areas = areas + response.json().get("data", [])
                 links = response.json().get("meta", {}).get("links", {})
+            areas = [
+                area
+                for area in areas
+                if city_name.upper() in area["name"].upper()
+                or "MARRAKECH" in area["name"].upper()
+            ]
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
