@@ -12,6 +12,8 @@ from flapware.forms import HomeSearchForm, HomeResultsForm
 from flapware.helpers import (
     get_home_city,
     get_destination_cities_for_airport,
+    async_access_token_and_type,
+    access_token_and_type,
 )
 
 
@@ -27,18 +29,7 @@ def save_home(request):
         city_country_name = city_details[5]
         with httpx.Client() as client:
             try:
-                response = client.post(
-                    f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                    data={
-                        "grant_type": "client_credentials",
-                        "client_id": os.environ.get("AMADEUS_API_KEY"),
-                        "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                    },
-                )
-                response.raise_for_status()
-                response = response.json()
-                access_token = response["access_token"]
-                token_type = response["token_type"]
+                token_type, access_token = access_token_and_type(client)
                 response = client.get(
                     f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
                     params={
@@ -109,18 +100,7 @@ def remove_cities(request):
 async def sights(request):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": os.environ.get("AMADEUS_API_KEY"),
-                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                },
-            )
-            response.raise_for_status()
-            response = response.json()
-            access_token = response["access_token"]
-            token_type = response["token_type"]
+            token_type, access_token = await async_access_token_and_type(client)
             full_city_name = request.GET.get("city_name", "").split(" ")
             city_name = full_city_name[0]
             for word in full_city_name[1:]:
@@ -189,18 +169,7 @@ async def sights(request):
 async def shopping(request):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": os.environ.get("AMADEUS_API_KEY"),
-                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                },
-            )
-            response.raise_for_status()
-            response = response.json()
-            access_token = response["access_token"]
-            token_type = response["token_type"]
+            token_type, access_token = await async_access_token_and_type(client)
             full_city_name = request.GET.get("city_name", "").split(" ")
             city_name = full_city_name[0]
             for word in full_city_name[1:]:
@@ -269,18 +238,7 @@ async def shopping(request):
 async def restaurants(request):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": os.environ.get("AMADEUS_API_KEY"),
-                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                },
-            )
-            response.raise_for_status()
-            response = response.json()
-            access_token = response["access_token"]
-            token_type = response["token_type"]
+            token_type, access_token = await async_access_token_and_type(client)
             full_city_name = request.GET.get("city_name", "").split(" ")
             city_name = full_city_name[0]
             for word in full_city_name[1:]:
@@ -349,18 +307,7 @@ async def restaurants(request):
 async def nightlife(request):
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": os.environ.get("AMADEUS_API_KEY"),
-                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                },
-            )
-            response.raise_for_status()
-            response = response.json()
-            access_token = response["access_token"]
-            token_type = response["token_type"]
+            token_type, access_token = await async_access_token_and_type(client)
             full_city_name = request.GET.get("city_name", "").split(" ")
             city_name = full_city_name[0]
             for word in full_city_name[1:]:
@@ -429,18 +376,7 @@ async def nightlife(request):
 def safety(request):
     with httpx.Client() as client:
         try:
-            response = client.post(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": os.environ.get("AMADEUS_API_KEY"),
-                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                },
-            )
-            response.raise_for_status()
-            response = response.json()
-            access_token = response["access_token"]
-            token_type = response["token_type"]
+            token_type, access_token = access_token_and_type(client)
             full_city_name = request.GET.get("city_name", "").split(" ")
             city_name = full_city_name[0]
             for word in full_city_name[1:]:
@@ -500,18 +436,7 @@ async def destinations(request):
         )
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": os.environ.get("AMADEUS_API_KEY"),
-                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                },
-            )
-            response.raise_for_status()
-            response = response.json()
-            access_token = response["access_token"]
-            token_type = response["token_type"]
+            token_type, access_token = await async_access_token_and_type(client)
             tasks = []
             for iata in home_city["airports"]:
                 tasks.append(
@@ -551,18 +476,7 @@ def home(request):
         if form.is_valid():
             with httpx.Client() as client:
                 try:
-                    response = client.post(
-                        f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
-                        data={
-                            "grant_type": "client_credentials",
-                            "client_id": os.environ.get("AMADEUS_API_KEY"),
-                            "client_secret": os.environ.get("AMADEUS_API_SECRET"),
-                        },
-                    )
-                    response.raise_for_status()
-                    response = response.json()
-                    access_token = response["access_token"]
-                    token_type = response["token_type"]
+                    token_type, access_token = access_token_and_type(client)
                     response = client.get(
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
                         params={
