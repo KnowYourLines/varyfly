@@ -14,24 +14,4 @@ urlpatterns = [
         views.safety,
         name="safety",
     ),
-    path(
-        "sights/",
-        views.sights,
-        name="sights",
-    ),
-    path(
-        "nightlife/",
-        views.nightlife,
-        name="nightlife",
-    ),
-    path(
-        "restaurants/",
-        views.restaurants,
-        name="restaurants",
-    ),
-    path(
-        "shopping/",
-        views.shopping,
-        name="shopping",
-    ),
 ]

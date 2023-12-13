@@ -14,7 +14,6 @@ from veyfly.helpers import (
     get_destination_cities_for_airport,
     async_access_token_and_type,
     access_token_and_type,
-    pois_and_scores,
 )
 
 
@@ -96,54 +95,6 @@ def remove_cities(request):
                 del saved_destinations[iata]
         request.session["saved_destinations"] = saved_destinations
     return HttpResponseRedirect("/destinations/")
-
-
-async def sights(request):
-    (
-        pois,
-        sight_scores,
-    ) = await pois_and_scores("SIGHTS", "sight", request)
-    return render(
-        request,
-        "sights.html",
-        {"sights": pois, "scores": sight_scores},
-    )
-
-
-async def shopping(request):
-    (
-        pois,
-        scores,
-    ) = await pois_and_scores("SHOPPING", "shopping", request)
-    return render(
-        request,
-        "shopping.html",
-        {"pois": pois, "scores": scores},
-    )
-
-
-async def restaurants(request):
-    (
-        pois,
-        scores,
-    ) = await pois_and_scores("RESTAURANT", "restaurant", request)
-    return render(
-        request,
-        "restaurants.html",
-        {"pois": pois, "scores": scores},
-    )
-
-
-async def nightlife(request):
-    (
-        pois,
-        scores,
-    ) = await pois_and_scores("NIGHTLIFE", "nightLife", request)
-    return render(
-        request,
-        "nightlife.html",
-        {"pois": pois, "scores": scores},
-    )
 
 
 def safety(request):
