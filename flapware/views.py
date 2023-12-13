@@ -122,10 +122,21 @@ async def sights(request):
             access_token = response["access_token"]
             token_type = response["token_type"]
             response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
+                params={
+                    "keyword": request.GET.get("city_name"),
+                    "countryCode": request.GET.get("country_code"),
+                    "max": 1,
+                },
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            city = response.json()["data"][0]
+            response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
                 params={
-                    "latitude": float(request.GET.get("latitude")),
-                    "longitude": float(request.GET.get("longitude")),
+                    "latitude": city["geoCode"]["latitude"],
+                    "longitude": city["geoCode"]["longitude"],
                 },
                 headers={"Authorization": f"{token_type} {access_token}"},
             )
@@ -138,8 +149,8 @@ async def sights(request):
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
                 params={
-                    "latitude": float(request.GET.get("latitude")),
-                    "longitude": float(request.GET.get("longitude")),
+                    "latitude": city["geoCode"]["latitude"],
+                    "longitude": city["geoCode"]["longitude"],
                     "radius": 20,
                     "page[limit]": 10000,
                     "categories": "SIGHTS",
