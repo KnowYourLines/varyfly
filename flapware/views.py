@@ -157,7 +157,7 @@ async def sights(request):
                 params={
                     "latitude": city["geoCode"]["latitude"],
                     "longitude": city["geoCode"]["longitude"],
-                    "radius": 20,
+                    "radius": 20 if city_name != "HELSINKI" else 12,
                     "page[limit]": 10000,
                     "categories": "SIGHTS",
                 },
@@ -237,7 +237,7 @@ async def shopping(request):
                 params={
                     "latitude": city["geoCode"]["latitude"],
                     "longitude": city["geoCode"]["longitude"],
-                    "radius": 20,
+                    "radius": 20 if city_name != "HELSINKI" else 12,
                     "page[limit]": 10000,
                     "categories": "SHOPPING",
                 },
@@ -317,7 +317,7 @@ async def restaurants(request):
                 params={
                     "latitude": city["geoCode"]["latitude"],
                     "longitude": city["geoCode"]["longitude"],
-                    "radius": 20,
+                    "radius": 20 if city_name != "HELSINKI" else 12,
                     "page[limit]": 10000,
                     "categories": "RESTAURANT",
                 },
@@ -397,7 +397,7 @@ async def nightlife(request):
                 params={
                     "latitude": city["geoCode"]["latitude"],
                     "longitude": city["geoCode"]["longitude"],
-                    "radius": 20,
+                    "radius": 20 if city_name != "HELSINKI" else 12,
                     "page[limit]": 10000,
                     "categories": "NIGHTLIFE",
                 },
