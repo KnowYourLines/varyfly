@@ -36,7 +36,7 @@ async def async_access_token_and_type(client):
 
 
 def access_token_and_type(client):
-    response = await client.post(
+    response = client.post(
         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
         data={
             "grant_type": "client_credentials",
@@ -88,3 +88,28 @@ async def get_category_scores(category, city, client, token_type, access_token):
         if scores["radius"] == 1500
     )
     return category_scores
+
+
+async def get_pois(category, city, city_name, client, token_type, access_token):
+    response = await client.get(
+        f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
+        params={
+            "latitude": city["geoCode"]["latitude"],
+            "longitude": city["geoCode"]["longitude"],
+            "radius": 20 if city_name != "HELSINKI" else 12,
+            "page[limit]": 10000,
+            "categories": category,
+        },
+        headers={"Authorization": f"{token_type} {access_token}"},
+    )
+    response.raise_for_status()
+    pois = response.json().get("data", [])
+    links = response.json().get("meta", {}).get("links", {})
+    while links.get("next"):
+        response = await client.get(
+            links.get("next"),
+            headers={"Authorization": f"{token_type} {access_token}"},
+        )
+        pois = pois + response.json().get("data", [])
+        links = response.json().get("meta", {}).get("links", {})
+    return pois

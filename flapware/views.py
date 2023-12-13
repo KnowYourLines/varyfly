@@ -16,6 +16,7 @@ from flapware.helpers import (
     access_token_and_type,
     get_city,
     get_category_scores,
+    get_pois,
 )
 
 
@@ -107,27 +108,9 @@ async def sights(request):
             sight_scores = await get_category_scores(
                 "sight", city, client, token_type, access_token
             )
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                    "radius": 20 if city_name != "HELSINKI" else 12,
-                    "page[limit]": 10000,
-                    "categories": "SIGHTS",
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
+            pois = await get_pois(
+                "SIGHTS", city, city_name, client, token_type, access_token
             )
-            response.raise_for_status()
-            pois = response.json().get("data", [])
-            links = response.json().get("meta", {}).get("links", {})
-            while links.get("next"):
-                response = await client.get(
-                    links.get("next"),
-                    headers={"Authorization": f"{token_type} {access_token}"},
-                )
-                pois = pois + response.json().get("data", [])
-                links = response.json().get("meta", {}).get("links", {})
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
@@ -149,27 +132,9 @@ async def shopping(request):
             scores = await get_category_scores(
                 "shopping", city, client, token_type, access_token
             )
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                    "radius": 20 if city_name != "HELSINKI" else 12,
-                    "page[limit]": 10000,
-                    "categories": "SHOPPING",
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
+            pois = await get_pois(
+                "SHOPPING", city, city_name, client, token_type, access_token
             )
-            response.raise_for_status()
-            pois = response.json().get("data", [])
-            links = response.json().get("meta", {}).get("links", {})
-            while links.get("next"):
-                response = await client.get(
-                    links.get("next"),
-                    headers={"Authorization": f"{token_type} {access_token}"},
-                )
-                pois = pois + response.json().get("data", [])
-                links = response.json().get("meta", {}).get("links", {})
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
@@ -191,27 +156,9 @@ async def restaurants(request):
             scores = await get_category_scores(
                 "restaurant", city, client, token_type, access_token
             )
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                    "radius": 20 if city_name != "HELSINKI" else 12,
-                    "page[limit]": 10000,
-                    "categories": "RESTAURANT",
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
+            pois = await get_pois(
+                "RESTAURANT", city, city_name, client, token_type, access_token
             )
-            response.raise_for_status()
-            pois = response.json().get("data", [])
-            links = response.json().get("meta", {}).get("links", {})
-            while links.get("next"):
-                response = await client.get(
-                    links.get("next"),
-                    headers={"Authorization": f"{token_type} {access_token}"},
-                )
-                pois = pois + response.json().get("data", [])
-                links = response.json().get("meta", {}).get("links", {})
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
@@ -233,27 +180,9 @@ async def nightlife(request):
             scores = await get_category_scores(
                 "nightLife", city, client, token_type, access_token
             )
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                    "radius": 20 if city_name != "HELSINKI" else 12,
-                    "page[limit]": 10000,
-                    "categories": "NIGHTLIFE",
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
+            pois = await get_pois(
+                "NIGHTLIFE", city, city_name, client, token_type, access_token
             )
-            response.raise_for_status()
-            pois = response.json().get("data", [])
-            links = response.json().get("meta", {}).get("links", {})
-            while links.get("next"):
-                response = await client.get(
-                    links.get("next"),
-                    headers={"Authorization": f"{token_type} {access_token}"},
-                )
-                pois = pois + response.json().get("data", [])
-                links = response.json().get("meta", {}).get("links", {})
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
