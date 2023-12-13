@@ -15,6 +15,7 @@ from flapware.helpers import (
     async_access_token_and_type,
     access_token_and_type,
     get_city,
+    get_category_scores,
 )
 
 
@@ -103,19 +104,8 @@ async def sights(request):
         try:
             token_type, access_token = await async_access_token_and_type(client)
             city, city_name = await get_city(client, token_type, access_token, request)
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            sight_scores = next(
-                scores["categoryScores"]["sight"]
-                for scores in response.json()["data"]
-                if scores["radius"] == 1500
+            sight_scores = await get_category_scores(
+                "sight", city, client, token_type, access_token
             )
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
@@ -156,19 +146,8 @@ async def shopping(request):
         try:
             token_type, access_token = await async_access_token_and_type(client)
             city, city_name = await get_city(client, token_type, access_token, request)
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            scores = next(
-                scores["categoryScores"]["shopping"]
-                for scores in response.json()["data"]
-                if scores["radius"] == 1500
+            scores = await get_category_scores(
+                "shopping", city, client, token_type, access_token
             )
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
@@ -209,19 +188,8 @@ async def restaurants(request):
         try:
             token_type, access_token = await async_access_token_and_type(client)
             city, city_name = await get_city(client, token_type, access_token, request)
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            scores = next(
-                scores["categoryScores"]["restaurant"]
-                for scores in response.json()["data"]
-                if scores["radius"] == 1500
+            scores = await get_category_scores(
+                "restaurant", city, client, token_type, access_token
             )
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
@@ -262,19 +230,8 @@ async def nightlife(request):
         try:
             token_type, access_token = await async_access_token_and_type(client)
             city, city_name = await get_city(client, token_type, access_token, request)
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
-                params={
-                    "latitude": city["geoCode"]["latitude"],
-                    "longitude": city["geoCode"]["longitude"],
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
-            )
-            response.raise_for_status()
-            scores = next(
-                scores["categoryScores"]["nightLife"]
-                for scores in response.json()["data"]
-                if scores["radius"] == 1500
+            scores = await get_category_scores(
+                "nightLife", city, client, token_type, access_token
             )
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",

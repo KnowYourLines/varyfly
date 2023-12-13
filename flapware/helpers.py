@@ -70,3 +70,21 @@ async def get_city(client, token_type, access_token, request):
     response.raise_for_status()
     city = response.json()["data"][0]
     return city, city_name
+
+
+async def get_category_scores(category, city, client, token_type, access_token):
+    response = await client.get(
+        f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
+        params={
+            "latitude": city["geoCode"]["latitude"],
+            "longitude": city["geoCode"]["longitude"],
+        },
+        headers={"Authorization": f"{token_type} {access_token}"},
+    )
+    response.raise_for_status()
+    category_scores = next(
+        scores["categoryScores"][category]
+        for scores in response.json()["data"]
+        if scores["radius"] == 1500
+    )
+    return category_scores
