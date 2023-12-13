@@ -119,7 +119,16 @@ def safety(request):
                 headers={"Authorization": f"{token_type} {access_token}"},
             )
             response.raise_for_status()
-            city = response.json()["data"][0]
+            city_data = response.json().get("data")
+            if city_data:
+                city = city_data[0]
+            else:
+                city = {
+                    "geoCode": {
+                        "latitude": float(request.GET.get("latitude")),
+                        "longitude": float(request.GET.get("longitude")),
+                    }
+                }
             response = client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/safety/safety-rated-locations",
                 params={
@@ -181,7 +190,7 @@ async def destinations(request):
 
             destinations_for_home_airports = await asyncio.gather(*tasks)
             cities = []
-            added_cities = set()
+            added_cities = {home_city["iata"]}
             for airport_destinations in destinations_for_home_airports:
                 for city in airport_destinations:
                     if city["iataCode"] not in added_cities:
