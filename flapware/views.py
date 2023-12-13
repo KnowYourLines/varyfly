@@ -106,10 +106,10 @@ def remove_cities(request):
     return HttpResponseRedirect("/destinations/")
 
 
-def sights(request):
-    with httpx.Client() as client:
+async def sights(request):
+    async with httpx.AsyncClient() as client:
         try:
-            response = client.post(
+            response = await client.post(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
                 data={
                     "grant_type": "client_credentials",
@@ -121,7 +121,21 @@ def sights(request):
             response = response.json()
             access_token = response["access_token"]
             token_type = response["token_type"]
-            response = client.get(
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
+                params={
+                    "latitude": float(request.GET.get("latitude")),
+                    "longitude": float(request.GET.get("longitude")),
+                },
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            sight_scores = next(
+                scores["categoryScores"]["sight"]
+                for scores in response.json()["data"]
+                if scores["radius"] == 1500
+            )
+            response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
                 params={
                     "latitude": float(request.GET.get("latitude")),
@@ -136,7 +150,7 @@ def sights(request):
             pois = response.json().get("data", [])
             links = response.json().get("meta", {}).get("links", {})
             while links.get("next"):
-                response = client.get(
+                response = await client.get(
                     links.get("next"),
                     headers={"Authorization": f"{token_type} {access_token}"},
                 )
@@ -151,7 +165,7 @@ def sights(request):
     return render(
         request,
         "sights.html",
-        {"sights": pois},
+        {"sights": pois, "scores": sight_scores},
     )
 
 

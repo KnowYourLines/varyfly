@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load string_helpers %}
 <html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
@@ -27,6 +28,24 @@
     </div>
 </nav>
 <div class="container text-center">
+    <table class="table table-dark table-striped">
+        <caption>Sights to see from 0 (nothing to see) to 100 (many sights to enjoy).</caption>
+        <thead>
+        <tr>
+            <th scope="col">Overall</th>
+            <th scope="col">Historical</th>
+            <th scope="col">Beaches/Parks</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th scope="row" style="color:rgb{{scores.overall|get_location_score_colour}}">{{ scores.overall }}</th>
+            <td style="color:rgb{{scores.historical|get_location_score_colour}}">{{ scores.historical }}</td>
+            <td style="color:rgb{{scores.beachAndPark|get_location_score_colour}}">{{ scores.beachAndPark }}</td>
+        </tr>
+        </tbody>
+    </table>
+
     <table class="table table-dark table-striped">
       <thead>
         <tr>

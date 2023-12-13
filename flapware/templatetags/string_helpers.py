@@ -13,3 +13,14 @@ def get_safety_colour(safety_rating):
     green_color = min(255, int(pct_diff * 2 * 255))
     col = (red_color, green_color, 0)
     return col
+
+
+@register.filter(is_safe=True)
+@stringfilter
+def get_location_score_colour(score):
+    pct = int(score) / 100
+    pct_diff = 1.0 - pct
+    red_color = min(255, int(pct_diff * 2 * 255))
+    green_color = min(255, int(pct * 2 * 255))
+    col = (red_color, green_color, 0)
+    return col
