@@ -29,4 +29,9 @@ urlpatterns = [
         views.restaurants,
         name="restaurants",
     ),
+    path(
+        "shopping/",
+        views.shopping,
+        name="shopping",
+    ),
 ]

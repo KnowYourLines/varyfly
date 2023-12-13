@@ -186,6 +186,86 @@ async def sights(request):
     )
 
 
+async def shopping(request):
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/security/oauth2/token",
+                data={
+                    "grant_type": "client_credentials",
+                    "client_id": os.environ.get("AMADEUS_API_KEY"),
+                    "client_secret": os.environ.get("AMADEUS_API_SECRET"),
+                },
+            )
+            response.raise_for_status()
+            response = response.json()
+            access_token = response["access_token"]
+            token_type = response["token_type"]
+            full_city_name = request.GET.get("city_name", "").split(" ")
+            city_name = full_city_name[0]
+            for word in full_city_name[1:]:
+                if len(city_name + " " + word) > 10:
+                    break
+                city_name += " " + word
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
+                params={
+                    "keyword": city_name,
+                    "countryCode": request.GET.get("country_code"),
+                    "max": 1,
+                },
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            city = response.json()["data"][0]
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/location/analytics/category-rated-areas",
+                params={
+                    "latitude": city["geoCode"]["latitude"],
+                    "longitude": city["geoCode"]["longitude"],
+                },
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            scores = next(
+                scores["categoryScores"]["shopping"]
+                for scores in response.json()["data"]
+                if scores["radius"] == 1500
+            )
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/pois",
+                params={
+                    "latitude": city["geoCode"]["latitude"],
+                    "longitude": city["geoCode"]["longitude"],
+                    "radius": 20,
+                    "page[limit]": 10000,
+                    "categories": "SHOPPING",
+                },
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            pois = response.json().get("data", [])
+            links = response.json().get("meta", {}).get("links", {})
+            while links.get("next"):
+                response = await client.get(
+                    links.get("next"),
+                    headers={"Authorization": f"{token_type} {access_token}"},
+                )
+                pois = pois + response.json().get("data", [])
+                links = response.json().get("meta", {}).get("links", {})
+        except httpx.RequestError as exc:
+            logging.error(f"An error occurred while requesting {exc.request.url}.")
+        except httpx.HTTPStatusError as exc:
+            logging.error(
+                f"Error response {exc.response.status_code} while requesting {exc.request.url}."
+            )
+    return render(
+        request,
+        "shopping.html",
+        {"pois": pois, "scores": scores},
+    )
+
+
 async def restaurants(request):
     async with httpx.AsyncClient() as client:
         try:
