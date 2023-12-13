@@ -19,4 +19,9 @@ urlpatterns = [
         views.sights,
         name="sights",
     ),
+    path(
+        "nightlife/",
+        views.nightlife,
+        name="nightlife",
+    ),
 ]
