@@ -109,6 +109,10 @@ def safety(request):
                 city_name += " " + word
             if city_name == "MARRAKECH":
                 city_name = "MARRAKESH"
+            elif city_name == "MALTA":
+                city_name = "VALLETTA"
+            elif city_name == "MALE":
+                city_name = "MALÉ"
             response = client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
                 params={
