@@ -29,7 +29,8 @@
 </nav>
 <div class="container text-center">
     <table class="table table-dark table-striped">
-      <thead>
+        <caption>Likelihood of problems from 1 (not likely) to 100 (very likely).</caption>
+        <thead>
         <tr>
             <th scope="col">Area</th>
             <th scope="col">Overall Safety</th>
@@ -40,9 +41,9 @@
             <th scope="col">Political Freedom</th>
             <th scope="col">Women's Safety</th>
         </tr>
-      </thead>
-      <tbody>
-      {% for area in areas %}
+        </thead>
+        <tbody>
+        {% for area in areas %}
         <tr>
             <th scope="row"><a target="_blank" href="https://www.google.com/maps/search/?api=1&query={{ area.geoCode.latitude }}%2C{{ area.geoCode.longitude }}">{{ area.subType }}: {{ area.name }}</a></th>
             <td style="color:rgb{{area.safetyScores.overall|get_safety_colour}}">{{ area.safetyScores.overall }}</td>
@@ -53,8 +54,8 @@
             <td style="color:rgb{{area.safetyScores.politicalFreedom|get_safety_colour}}">{{ area.safetyScores.politicalFreedom }}</td>
             <td style="color:rgb{{area.safetyScores.women|get_safety_colour}}">{{ area.safetyScores.women }}</td>
         </tr>
-      {% endfor %}
-      </tbody>
+        {% endfor %}
+        </tbody>
     </table>
 
 </div>

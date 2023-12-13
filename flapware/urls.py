@@ -14,4 +14,9 @@ urlpatterns = [
         views.safety,
         name="safety",
     ),
+    path(
+        "sights/",
+        views.sights,
+        name="sights",
+    ),
 ]
