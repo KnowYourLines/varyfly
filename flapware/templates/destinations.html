@@ -35,16 +35,16 @@
                 <br/>
                 <div class="row">
                     <div class="col">
-                        <a href="/sights/?latitude={{city.geoCode.latitude}}&longitude={{city.geoCode.longitude}}">Sights</a>
+                        <a href="/sights/?city_name={{city.name}}&country_code={{city.address.countryCode}}">Sights</a>
                     </div>
                     <div class="col">
-                        <a href="/nightlife/?latitude={{city.geoCode.latitude}}&longitude={{city.geoCode.longitude}}">Nightlife</a>
+                        <a href="/nightlife/?city_name={{city.name}}&country_code={{city.address.countryCode}}">Nightlife</a>
                     </div>
                     <div class="col">
-                        <a href="/restaurants/?latitude={{city.geoCode.latitude}}&longitude={{city.geoCode.longitude}}">Restaurants</a>
+                        <a href="/restaurants/?city_name={{city.name}}&country_code={{city.address.countryCode}}">Restaurants</a>
                     </div>
                     <div class="col">
-                        <a href="/shopping/?latitude={{city.geoCode.latitude}}&longitude={{city.geoCode.longitude}}">Shopping</a>
+                        <a href="/shopping/?city_name={{city.name}}&country_code={{city.address.countryCode}}">Shopping</a>
                     </div>
                     <div class="col">
                         <a href="/safety/?city_name={{city.name}}&country_code={{city.address.countryCode}}">Safety</a>
