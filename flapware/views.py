@@ -102,7 +102,7 @@ async def sights(request):
     (
         pois,
         sight_scores,
-    ) = pois_and_scores("SIGHTS", "sight", request)
+    ) = await pois_and_scores("SIGHTS", "sight", request)
     return render(
         request,
         "sights.html",
@@ -114,7 +114,7 @@ async def shopping(request):
     (
         pois,
         scores,
-    ) = pois_and_scores("SHOPPING", "shopping", request)
+    ) = await pois_and_scores("SHOPPING", "shopping", request)
     return render(
         request,
         "shopping.html",
@@ -126,7 +126,7 @@ async def restaurants(request):
     (
         pois,
         scores,
-    ) = pois_and_scores("RESTAURANT", "restaurant", request)
+    ) = await pois_and_scores("RESTAURANT", "restaurant", request)
     return render(
         request,
         "restaurants.html",
@@ -138,7 +138,7 @@ async def nightlife(request):
     (
         pois,
         scores,
-    ) = pois_and_scores("NIGHTLIFE", "nightLife", request)
+    ) = await pois_and_scores("NIGHTLIFE", "nightLife", request)
     return render(
         request,
         "nightlife.html",
