@@ -101,7 +101,9 @@ def safety(request):
     with httpx.Client() as client:
         try:
             token_type, access_token = access_token_and_type(client)
-            full_city_name = request.GET.get("city_name", "").split(" ")
+            full_city_name = (
+                request.GET.get("city_name", "").replace("/", " ").split(" ")
+            )
             city_name = full_city_name[0]
             for word in full_city_name[1:]:
                 if len(city_name + " " + word) > 10:
