@@ -2,7 +2,7 @@ services:
   - type: web
     name: veyfly
     env: python
-    repo: https://github.com/KnowYourLines/flapware.git
+    repo: https://github.com/KnowYourLines/veyfly.git
     region: ohio
     plan: free
     branch: main
