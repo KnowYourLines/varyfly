@@ -87,9 +87,9 @@ async def cheapest_flight_dates(request):
                         destination_iata, country_code, client, token_type, access_token
                     )
                     departure_date = (
-                        f"{form.cleaned_data['earliest_departure_date']},{form.cleaned_data['latest_departure_date']}"
+                        f"{form.cleaned_data['departure_date']},{form.cleaned_data['latest_departure_date']}"
                         if form.cleaned_data.get("latest_departure_date")
-                        else f"{form.cleaned_data['earliest_departure_date']}"
+                        else f"{form.cleaned_data['departure_date']}"
                     )
                     duration = (
                         f"{form.cleaned_data['min_trip_length']},{form.cleaned_data['max_trip_length']}"

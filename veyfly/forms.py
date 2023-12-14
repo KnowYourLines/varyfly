@@ -25,9 +25,9 @@ class TravelPreferencesForm(forms.Form):
     max_trip_length = forms.IntegerField(
         required=False, min_value=1, label="Maximum trip length (optional)"
     )
-    earliest_departure_date = forms.DateField(
+    departure_date = forms.DateField(
         required=True,
-        label="Earliest departure date",
+        label="Departure date",
         widget=DateInput(attrs={"class": "form-control", "type": "date"}),
     )
     latest_departure_date = forms.DateField(
@@ -46,8 +46,8 @@ class TravelPreferencesForm(forms.Form):
             raise forms.ValidationError("The date cannot be in the past!")
         return date
 
-    def clean_earliest_departure_date(self):
-        date = self.cleaned_data.get("earliest_departure_date")
+    def clean_departure_date(self):
+        date = self.cleaned_data.get("departure_date")
         if date and date < datetime.date.today():
             raise forms.ValidationError("The date cannot be in the past!")
         return date
@@ -61,13 +61,11 @@ class TravelPreferencesForm(forms.Form):
             raise ValidationError(
                 "Maximum trip length must be greater than minimum trip length."
             )
-        earliest_departure_date = cleaned_data.get("earliest_departure_date")
+        departure_date = cleaned_data.get("departure_date")
         latest_departure_date = cleaned_data.get("latest_departure_date")
 
-        if latest_departure_date and latest_departure_date <= earliest_departure_date:
-            raise ValidationError(
-                "Latest departure date must be after earliest departure date."
-            )
+        if latest_departure_date and latest_departure_date <= departure_date:
+            raise ValidationError("Latest departure date must be after departure date.")
 
 
 class HomeResultsForm(forms.Form):

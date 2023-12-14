@@ -49,7 +49,7 @@
         {% for error in form.latest_departure_date.errors %}
             <li style="color:red"><strong>{{ error|escape }}</strong></li>
         {% endfor %}
-        {% for error in form.earliest_departure_date.errors %}
+        {% for error in form.departure_date.errors %}
             <li style="color:red"><strong>{{ error|escape }}</strong></li>
         {% endfor %}
         </ul>
@@ -63,8 +63,8 @@
         </div>
         <br/>
         <div class="fieldWrapper">
-            {{ form.earliest_departure_date.label_tag }}
-            {{ form.earliest_departure_date }}
+            {{ form.departure_date.label_tag }}
+            {{ form.departure_date }}
         </div>
         <br/>
         <div class="fieldWrapper">

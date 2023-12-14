@@ -8,9 +8,9 @@ def get_home_city(request):
 
 def get_travel_preferences(request):
     travel_preferences = request.session.get("travel_preferences", {})
-    if travel_preferences.get("earliest_departure_date"):
-        travel_preferences["earliest_departure_date"] = datetime.strptime(
-            travel_preferences["earliest_departure_date"], "%Y-%m-%d"
+    if travel_preferences.get("departure_date"):
+        travel_preferences["departure_date"] = datetime.strptime(
+            travel_preferences["departure_date"], "%Y-%m-%d"
         )
     if travel_preferences.get("latest_departure_date"):
         travel_preferences["latest_departure_date"] = datetime.strptime(
@@ -20,9 +20,9 @@ def get_travel_preferences(request):
 
 
 def save_travel_preferences(request, travel_preferences):
-    if travel_preferences.get("earliest_departure_date"):
-        travel_preferences["earliest_departure_date"] = travel_preferences[
-            "earliest_departure_date"
+    if travel_preferences.get("departure_date"):
+        travel_preferences["departure_date"] = travel_preferences[
+            "departure_date"
         ].strftime("%Y-%m-%d")
     if travel_preferences.get("latest_departure_date"):
         travel_preferences["latest_departure_date"] = travel_preferences[
