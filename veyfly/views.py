@@ -106,47 +106,20 @@ async def safety(request):
     async with httpx.AsyncClient() as client:
         try:
             token_type, access_token = await access_token_and_type(client)
-            full_city_name = (
-                request.GET.get("city_name", "").replace("/", " ").split(" ")
-            )
-            city_name = full_city_name[0]
-            for word in full_city_name[1:]:
-                if len(city_name + " " + word) > 10:
-                    break
-                city_name += " " + word
-            if city_name == "MARRAKECH":
-                city_name = "MARRAKESH"
-            elif city_name == "MALTA":
-                city_name = "VALLETTA"
-            elif city_name == "MALE":
-                city_name = "MALÉ"
+            city_iata = request.GET.get("city_iata")
             response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
                 params={
-                    "keyword": city_name,
+                    "keyword": city_iata,
                     "countryCode": request.GET.get("country_code"),
-                    "max": 1,
+                    "subType": "CITY",
                 },
                 headers={"Authorization": f"{token_type} {access_token}"},
             )
             response.raise_for_status()
-            city_data = response.json().get("data")
-            if city_data:
-                city = city_data[0]
-                if not city.get("geoCode"):
-                    city = {
-                        "geoCode": {
-                            "latitude": float(request.GET.get("latitude")),
-                            "longitude": float(request.GET.get("longitude")),
-                        }
-                    }
-            else:
-                city = {
-                    "geoCode": {
-                        "latitude": float(request.GET.get("latitude")),
-                        "longitude": float(request.GET.get("longitude")),
-                    }
-                }
+            logging.info(response.json())
+            city_data = response.json().get("data", [])
+            city = next(city for city in city_data if city["iataCode"] == city_iata)
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/safety/safety-rated-locations",
                 params={
@@ -170,8 +143,20 @@ async def safety(request):
             areas = [
                 area
                 for area in areas
-                if city_name.upper() in area["name"].upper()
-                or "MARRAKECH" in area["name"].upper()
+                if city["name"].upper() in area["name"].upper()
+                or any(
+                    city in area["name"].upper()
+                    for city in [
+                        "MARRAKESH",
+                        "MALÉ",
+                        "VALLETTA",
+                        "MINNEAPOLIS",
+                        "CASTRIES",
+                        "MANAMA",
+                        "KOLN",
+                        "LEIPZIG",
+                    ]
+                )
             ]
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
