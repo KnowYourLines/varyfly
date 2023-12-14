@@ -1,11 +1,11 @@
 import asyncio
 import logging
 import os
+from datetime import datetime
 
 import httpx
 from asgiref.sync import sync_to_async
 from django.http import HttpResponseRedirect
-
 from django.shortcuts import render
 
 from veyfly.forms import HomeSearchForm, HomeResultsForm
@@ -87,9 +87,24 @@ async def cheapest_flight_dates(request):
                 headers={"Authorization": f"{token_type} {access_token}"},
             )
             response.raise_for_status()
-            logging.info(response.json())
-            logging.info(len(response.json()["data"]))
-            flight_dates = response.json().get("data", [])
+            response = response.json()
+            flights = response.get("data", [])
+            currency = response.get("meta", {}).get("currency")
+            params = response.get("meta", {}).get("defaults")
+            airports = response["dictionaries"]["locations"]
+            for flight in flights:
+                flight[
+                    "readable_origin"
+                ] = f"{airports[flight['origin']]['detailedName']} ({flight['origin']})"
+                flight[
+                    "readable_destination"
+                ] = f"{airports[flight['destination']]['detailedName']} ({flight['destination']})"
+                departure_date = datetime.strptime(flight["departureDate"], "%Y-%m-%d")
+                flight["readable_departure"] = departure_date.strftime("%a %d %b %Y")
+                return_date = datetime.strptime(flight["returnDate"], "%Y-%m-%d")
+                flight["readable_return"] = return_date.strftime("%a %d %b %Y")
+                trip_length = return_date - departure_date
+                flight["trip_num_days"] = trip_length.days
         except httpx.RequestError as exc:
             logging.error(f"An error occurred while requesting {exc.request.url}.")
         except httpx.HTTPStatusError as exc:
@@ -100,9 +115,11 @@ async def cheapest_flight_dates(request):
         request,
         "cheapest_flight_dates.html",
         {
-            "flight_dates": flight_dates,
+            "flights": flights,
             "destination_city": city["name"],
             "destination_country": city["address"]["countryName"],
+            "currency": currency,
+            "params": params,
         },
     )
 
@@ -164,7 +181,11 @@ async def safety(request):
     return render(
         request,
         "safety.html",
-        {"areas": areas},
+        {
+            "areas": areas,
+            "destination_city": city["name"],
+            "destination_country": city["address"]["countryName"],
+        },
     )
 
 
