@@ -1,8 +1,34 @@
 import os
+from datetime import datetime
 
 
 def get_home_city(request):
     return request.session.get("home_city", {})
+
+
+def get_travel_preferences(request):
+    travel_preferences = request.session.get("travel_preferences", {})
+    if travel_preferences.get("earliest_departure_date"):
+        travel_preferences["earliest_departure_date"] = datetime.strptime(
+            travel_preferences["earliest_departure_date"], "%Y-%m-%d"
+        )
+    if travel_preferences.get("latest_departure_date"):
+        travel_preferences["latest_departure_date"] = datetime.strptime(
+            travel_preferences["latest_departure_date"], "%Y-%m-%d"
+        )
+    return travel_preferences
+
+
+def save_travel_preferences(request, travel_preferences):
+    if travel_preferences.get("earliest_departure_date"):
+        travel_preferences["earliest_departure_date"] = travel_preferences[
+            "earliest_departure_date"
+        ].strftime("%Y-%m-%d")
+    if travel_preferences.get("latest_departure_date"):
+        travel_preferences["latest_departure_date"] = travel_preferences[
+            "latest_departure_date"
+        ].strftime("%Y-%m-%d")
+    request.session["travel_preferences"] = travel_preferences
 
 
 async def get_destination_cities_for_airport(

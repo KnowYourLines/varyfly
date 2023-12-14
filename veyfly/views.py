@@ -14,6 +14,8 @@ from veyfly.helpers import (
     get_destination_cities_for_airport,
     access_token_and_type,
     get_city_details,
+    save_travel_preferences,
+    get_travel_preferences,
 )
 
 
@@ -67,11 +69,15 @@ async def save_home(request):
 async def cheapest_flight_dates(request):
     destination_iata = request.GET.get("destination_iata")
     country_code = request.GET.get("country_code")
-    form = TravelPreferencesForm()
+    saved_travel_preferences = await sync_to_async(get_travel_preferences)(request)
+    if saved_travel_preferences:
+        form = TravelPreferencesForm(initial=saved_travel_preferences)
+    else:
+        form = TravelPreferencesForm()
     if request.method == "POST":
         form = TravelPreferencesForm(request.POST)
         if form.is_valid():
-            logging.info(form.cleaned_data)
+            await sync_to_async(save_travel_preferences)(request, form.cleaned_data)
             home_city = await sync_to_async(get_home_city)(request)
             origin_iata = home_city["iata"]
             async with httpx.AsyncClient() as client:
