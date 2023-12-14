@@ -13,6 +13,7 @@ from veyfly.helpers import (
     get_home_city,
     get_destination_cities_for_airport,
     access_token_and_type,
+    get_city_details,
 )
 
 
@@ -64,12 +65,16 @@ async def save_home(request):
 
 
 async def cheapest_flight_dates(request):
-    destination_iata = request.GET.get("destination")
+    destination_iata = request.GET.get("destination_iata")
+    country_code = request.GET.get("country_code")
     home_city = await sync_to_async(get_home_city)(request)
     origin_iata = home_city["iata"]
     async with httpx.AsyncClient() as client:
         try:
             token_type, access_token = await access_token_and_type(client)
+            city = await get_city_details(
+                destination_iata, country_code, client, token_type, access_token
+            )
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-dates",
                 params={
@@ -96,8 +101,8 @@ async def cheapest_flight_dates(request):
         "cheapest_flight_dates.html",
         {
             "flight_dates": flight_dates,
-            "destination_city": request.GET.get("city"),
-            "destination_country": request.GET.get("country"),
+            "destination_city": city["name"],
+            "destination_country": city["address"]["countryName"],
         },
     )
 
@@ -107,19 +112,10 @@ async def safety(request):
         try:
             token_type, access_token = await access_token_and_type(client)
             city_iata = request.GET.get("city_iata")
-            response = await client.get(
-                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
-                params={
-                    "keyword": city_iata,
-                    "countryCode": request.GET.get("country_code"),
-                    "subType": "CITY",
-                },
-                headers={"Authorization": f"{token_type} {access_token}"},
+            country_code = request.GET.get("country_code")
+            city = await get_city_details(
+                city_iata, country_code, client, token_type, access_token
             )
-            response.raise_for_status()
-            logging.info(response.json())
-            city_data = response.json().get("data", [])
-            city = next(city for city in city_data if city["iataCode"] == city_iata)
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/safety/safety-rated-locations",
                 params={
