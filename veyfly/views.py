@@ -140,7 +140,7 @@ async def safety(request):
                 )
                 areas = areas + response.json().get("data", [])
                 links = response.json().get("meta", {}).get("links", {})
-            city_names_not_matching_area_names = [
+            city_areas_not_matching_city_names = [
                 "MARRAKESH",
                 "MALÉ",
                 "VALLETTA",
@@ -156,7 +156,7 @@ async def safety(request):
                 if city["name"].upper() in area["name"].upper()
                 or any(
                     name in area["name"].upper()
-                    for name in city_names_not_matching_area_names
+                    for name in city_areas_not_matching_city_names
                 )
             ]
         except httpx.RequestError as exc:
