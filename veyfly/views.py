@@ -86,25 +86,20 @@ async def cheapest_flight_dates(request):
                     city = await get_city_details(
                         destination_iata, country_code, client, token_type, access_token
                     )
-                    departure_date = (
-                        f"{form.cleaned_data['departure_date']},{form.cleaned_data['latest_departure_date']}"
-                        if form.cleaned_data.get("latest_departure_date")
-                        else f"{form.cleaned_data['departure_date']}"
-                    )
-                    duration = (
-                        f"{form.cleaned_data['min_trip_length']},{form.cleaned_data['max_trip_length']}"
-                        if form.cleaned_data.get("max_trip_length")
-                        else f"{form.cleaned_data['min_trip_length']}"
-                    )
+                    params = {
+                        "origin": origin_iata,
+                        "destination": destination_iata,
+                        "nonStop": form.cleaned_data["nonstop_only"],
+                    }
+                    if form.cleaned_data["trip_length"] in [
+                        f"{i}" for i in range(1, 16)
+                    ]:
+                        params["duration"] = form.cleaned_data["trip_length"]
+                    else:
+                        params["oneWay"] = True
                     response = await client.get(
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-dates",
-                        params={
-                            "origin": origin_iata,
-                            "destination": destination_iata,
-                            "duration": duration,
-                            "nonStop": form.cleaned_data["nonstop_only"],
-                            "departureDate": departure_date,
-                        },
+                        params=params,
                         headers={"Authorization": f"{token_type} {access_token}"},
                     )
                     response.raise_for_status()
@@ -126,19 +121,38 @@ async def cheapest_flight_dates(request):
                         flight["readable_departure"] = departure_date.strftime(
                             "%a %d %b %Y"
                         )
-                        return_date = datetime.strptime(
-                            flight["returnDate"], "%Y-%m-%d"
-                        )
-                        flight["readable_return"] = return_date.strftime("%a %d %b %Y")
-                        trip_length = return_date - departure_date
-                        flight["trip_num_days"] = trip_length.days
+                        if flight.get("returnDate"):
+                            return_date = datetime.strptime(
+                                flight["returnDate"], "%Y-%m-%d"
+                            )
+                            flight["readable_return"] = return_date.strftime(
+                                "%a %d %b %Y"
+                            )
                 except httpx.RequestError as exc:
                     logging.error(
                         f"An error occurred while requesting {exc.request.url}."
                     )
+                    return render(
+                        request,
+                        "cheapest_flight_dates.html",
+                        {
+                            "form": form,
+                            "destination_city": city["name"],
+                            "destination_country": city["address"]["countryName"],
+                        },
+                    )
                 except httpx.HTTPStatusError as exc:
                     logging.error(
                         f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
+                    )
+                    return render(
+                        request,
+                        "cheapest_flight_dates.html",
+                        {
+                            "form": form,
+                            "destination_city": city["name"],
+                            "destination_country": city["address"]["countryName"],
+                        },
                     )
             return render(
                 request,

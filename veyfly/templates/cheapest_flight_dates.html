@@ -37,39 +37,21 @@
         {% for error in form.non_field_errors %}
             <li style="color:red"><strong>{{ error|escape }}</strong></li>
         {% endfor %}
-        {% for error in form.min_trip_length.errors  %}
-            <li style="color:red"><strong>{{ error|escape }}</strong></li>
-        {% endfor %}
-        {% for error in form.max_trip_length.errors %}
+        {% for error in form.trip_length.errors  %}
             <li style="color:red"><strong>{{ error|escape }}</strong></li>
         {% endfor %}
         {% for error in form.nonstop_only.errors %}
             <li style="color:red"><strong>{{ error|escape }}</strong></li>
         {% endfor %}
-        {% for error in form.latest_departure_date.errors %}
-            <li style="color:red"><strong>{{ error|escape }}</strong></li>
-        {% endfor %}
-        {% for error in form.departure_date.errors %}
-            <li style="color:red"><strong>{{ error|escape }}</strong></li>
-        {% endfor %}
         </ul>
         <div class="fieldWrapper">
-            {{ form.min_trip_length.label_tag }}
-            {{ form.min_trip_length }}
-            {{ form.max_trip_length.label_tag }}
-            {{ form.max_trip_length }}
+            {{ form.trip_length.label_tag }}
+            {{ form.trip_length }}
+        </div>
+        <br/>
+        <div class="fieldWrapper">
             {{ form.nonstop_only.label_tag }}
             {{ form.nonstop_only }}
-        </div>
-        <br/>
-        <div class="fieldWrapper">
-            {{ form.departure_date.label_tag }}
-            {{ form.departure_date }}
-        </div>
-        <br/>
-        <div class="fieldWrapper">
-            {{ form.latest_departure_date.label_tag }}
-            {{ form.latest_departure_date }}
         </div>
         <br/>
         <input type="submit" value="Search">
@@ -78,12 +60,11 @@
         <table class="table table-dark table-striped">
         <thead>
         <tr>
-            <th scope="cul">Total Price</th>
-            <th scope="cul">Origin</th>
-            <th scope="cul">Destination</th>
-            <th scope="cul">Departs</th>
-            <th scope="cul">Returns</th>
-            <th scope="cul">Trip Length</th>
+            <th scope="col">Total Price</th>
+            <th scope="col">Origin</th>
+            <th scope="col">Destination</th>
+            <th scope="col">Departs</th>
+            <th scope="col">Returns</th>
         </tr>
         </thead>
         <tbody>
@@ -93,8 +74,7 @@
             <td>{{ flight.readable_origin }}</td>
             <td>{{ flight.readable_destination }}</td>
             <td>{{ flight.readable_departure }}</td>
-            <td>{{ flight.readable_return }}</td>
-            <td>{{ flight.trip_num_days }} days</td>
+            <td>{% if flight.readable_return %}{{ flight.readable_return }}{% else %}N/A{% endif %}</td>
         </tr>
         {% endfor %}
         </tbody>
