@@ -14,4 +14,9 @@ urlpatterns = [
         views.safety,
         name="safety",
     ),
+    path(
+        "cheapest-flight-dates/",
+        views.cheapest_flight_dates,
+        name="cheapest_flight_dates",
+    ),
 ]

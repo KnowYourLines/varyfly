@@ -12,12 +12,11 @@ from veyfly.forms import HomeSearchForm, HomeResultsForm
 from veyfly.helpers import (
     get_home_city,
     get_destination_cities_for_airport,
-    async_access_token_and_type,
     access_token_and_type,
 )
 
 
-def save_home(request):
+async def save_home(request):
     if request.method == "POST":
         city = request.POST.get("city")
         city_details = city.split(",")
@@ -27,10 +26,10 @@ def save_home(request):
         city_latitude = city_details[3]
         city_longitude = city_details[4]
         city_country_name = city_details[5]
-        with httpx.Client() as client:
+        async with httpx.AsyncClient() as client:
             try:
-                token_type, access_token = access_token_and_type(client)
-                response = client.get(
+                token_type, access_token = await access_token_and_type(client)
+                response = await client.get(
                     f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
                     params={
                         "subType": "AIRPORT",
@@ -64,43 +63,49 @@ def save_home(request):
     return HttpResponseRedirect("/")
 
 
-def add_cities(request):
-    if request.method == "POST":
-        cities = request.POST.getlist("cities")
-        destinations = request.session.get("saved_destinations", {})
-        for city in cities:
-            city_details = city.split(",")
-            city_name = city_details[0]
-            city_iata = city_details[1]
-            city_latitude = city_details[2]
-            city_longitude = city_details[3]
-            if city_iata not in destinations:
-                destinations[city_iata] = {
-                    "name": city_name,
-                    "latitude": city_latitude,
-                    "longitude": city_longitude,
-                }
-        request.session["saved_destinations"] = destinations
-    return HttpResponseRedirect("/destinations/")
-
-
-def remove_cities(request):
-    if request.method == "POST":
-        cities = request.POST.getlist("cities")
-        saved_destinations = request.session.get("saved_destinations", {})
-        for city in cities:
-            city_details = city.split(",")
-            iata = city_details[0]
-            if iata in saved_destinations:
-                del saved_destinations[iata]
-        request.session["saved_destinations"] = saved_destinations
-    return HttpResponseRedirect("/destinations/")
-
-
-def safety(request):
-    with httpx.Client() as client:
+async def cheapest_flight_dates(request):
+    destination_iata = request.GET.get("destination")
+    home_city = await sync_to_async(get_home_city)(request)
+    origin_iata = home_city["iata"]
+    async with httpx.AsyncClient() as client:
         try:
-            token_type, access_token = access_token_and_type(client)
+            token_type, access_token = await access_token_and_type(client)
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-dates",
+                params={
+                    "origin": origin_iata,
+                    "destination": destination_iata,
+                    "duration": 15,
+                    "nonStop": True,
+                    "departureDate": "2023-12-15,2024-03-11",
+                },
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            logging.info(response.json())
+            logging.info(len(response.json()["data"]))
+            flight_dates = response.json().get("data", [])
+        except httpx.RequestError as exc:
+            logging.error(f"An error occurred while requesting {exc.request.url}.")
+        except httpx.HTTPStatusError as exc:
+            logging.error(
+                f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
+            )
+    return render(
+        request,
+        "cheapest_flight_dates.html",
+        {
+            "flight_dates": flight_dates,
+            "destination_city": request.GET.get("city"),
+            "destination_country": request.GET.get("country"),
+        },
+    )
+
+
+async def safety(request):
+    async with httpx.AsyncClient() as client:
+        try:
+            token_type, access_token = await access_token_and_type(client)
             full_city_name = (
                 request.GET.get("city_name", "").replace("/", " ").split(" ")
             )
@@ -115,7 +120,7 @@ def safety(request):
                 city_name = "VALLETTA"
             elif city_name == "MALE":
                 city_name = "MALÉ"
-            response = client.get(
+            response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
                 params={
                     "keyword": city_name,
@@ -142,7 +147,7 @@ def safety(request):
                         "longitude": float(request.GET.get("longitude")),
                     }
                 }
-            response = client.get(
+            response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/safety/safety-rated-locations",
                 params={
                     "latitude": city["geoCode"]["latitude"],
@@ -156,7 +161,7 @@ def safety(request):
             areas = response.json().get("data", [])
             links = response.json().get("meta", {}).get("links", {})
             while links.get("next"):
-                response = client.get(
+                response = await client.get(
                     links.get("next"),
                     headers={"Authorization": f"{token_type} {access_token}"},
                 )
@@ -190,7 +195,7 @@ async def destinations(request):
         )
     async with httpx.AsyncClient() as client:
         try:
-            token_type, access_token = await async_access_token_and_type(client)
+            token_type, access_token = await access_token_and_type(client)
             tasks = []
             for iata in home_city["airports"]:
                 tasks.append(
@@ -222,16 +227,16 @@ async def destinations(request):
         )
 
 
-def home(request):
-    home_city = get_home_city(request)
+async def home(request):
+    home_city = await sync_to_async(get_home_city)(request)
     form = HomeSearchForm()
     if request.method == "POST":
         form = HomeSearchForm(request.POST)
         if form.is_valid():
-            with httpx.Client() as client:
+            async with httpx.AsyncClient() as client:
                 try:
-                    token_type, access_token = access_token_and_type(client)
-                    response = client.get(
+                    token_type, access_token = await access_token_and_type(client)
+                    response = await client.get(
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations",
                         params={
                             "subType": "CITY",
