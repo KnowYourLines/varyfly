@@ -71,6 +71,7 @@ async def cheapest_flight_dates(request):
     if request.method == "POST":
         form = TravelPreferencesForm(request.POST)
         if form.is_valid():
+            logging.info(form.cleaned_data)
             home_city = await sync_to_async(get_home_city)(request)
             origin_iata = home_city["iata"]
             async with httpx.AsyncClient() as client:
@@ -79,14 +80,24 @@ async def cheapest_flight_dates(request):
                     city = await get_city_details(
                         destination_iata, country_code, client, token_type, access_token
                     )
+                    departure_date = (
+                        f"{form.cleaned_data['earliest_departure_date']},{form.cleaned_data['latest_departure_date']}"
+                        if form.cleaned_data.get("latest_departure_date")
+                        else f"{form.cleaned_data['earliest_departure_date']}"
+                    )
+                    duration = (
+                        f"{form.cleaned_data['min_trip_length']},{form.cleaned_data['max_trip_length']}"
+                        if form.cleaned_data.get("max_trip_length")
+                        else f"{form.cleaned_data['min_trip_length']}"
+                    )
                     response = await client.get(
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-dates",
                         params={
                             "origin": origin_iata,
                             "destination": destination_iata,
-                            "duration": 15,
-                            "nonStop": True,
-                            "departureDate": "2023-12-15,2024-03-11",
+                            "duration": duration,
+                            "nonStop": form.cleaned_data["nonstop_only"],
+                            "departureDate": departure_date,
                         },
                         headers={"Authorization": f"{token_type} {access_token}"},
                     )
