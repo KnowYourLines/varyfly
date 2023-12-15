@@ -299,7 +299,10 @@ async def destinations(request):
             logging.error(
                 f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
             )
-        cities = sorted(cities, key=itemgetter("name"))
+        cities = sorted(
+            cities,
+            key=lambda destination_city: destination_city["address"]["countryName"],
+        )
         return render(
             request,
             "destinations.html",
