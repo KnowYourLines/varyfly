@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 from datetime import datetime
-from operator import itemgetter
 
 import httpx
 from asgiref.sync import sync_to_async
@@ -66,6 +65,57 @@ async def save_home(request):
         }
         request.session["home_city"] = home_city
     return HttpResponseRedirect("/")
+
+
+async def busiest_travel_periods(request):
+    destination_iata = request.GET.get("destination_iata")
+    country_code = request.GET.get("country_code")
+    now = datetime.now()
+    previous_year = now.year - 1
+    async with httpx.AsyncClient() as client:
+        try:
+            token_type, access_token = await access_token_and_type(client)
+            city = await get_city_details(
+                destination_iata, country_code, client, token_type, access_token
+            )
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/travel/analytics/air-traffic/busiest-period",
+                params={"cityCode": destination_iata, "period": previous_year},
+                headers={"Authorization": f"{token_type} {access_token}"},
+            )
+            response.raise_for_status()
+            response = response.json()
+            monthly_traffic_percentages = response.get("data", [])
+            for monthly_traffic in monthly_traffic_percentages:
+                monthly_traffic["period"] = datetime.strptime(
+                    monthly_traffic["period"], "%Y-%m"
+                )
+                monthly_traffic["month_label"] = monthly_traffic["period"].strftime(
+                    "%B"
+                )
+                monthly_traffic["percentage"] = monthly_traffic["analytics"][
+                    "travelers"
+                ]["score"]
+            monthly_traffic_percentages = sorted(
+                monthly_traffic_percentages,
+                key=lambda traffic: traffic["period"],
+            )
+        except httpx.RequestError as exc:
+            logging.error(f"An error occurred while requesting {exc.request.url}.")
+        except httpx.HTTPStatusError as exc:
+            logging.error(
+                f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
+            )
+    return render(
+        request,
+        "busiest_travel_periods.html",
+        {
+            "destination_city": city["name"],
+            "destination_country": city["address"]["countryName"],
+            "year": previous_year,
+            "monthly_traffic_percentages": monthly_traffic_percentages,
+        },
+    )
 
 
 async def cheapest_flight_dates(request):
