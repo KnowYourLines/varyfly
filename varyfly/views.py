@@ -228,6 +228,7 @@ async def safety(request):
                 "MANAMA",
                 "KOLN",
                 "LEIPZIG",
+                "TEL AVIV",
             ]
             areas = [
                 area

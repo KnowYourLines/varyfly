@@ -63,4 +63,22 @@ async def get_city_details(
     response.raise_for_status()
     city_data = response.json().get("data", [])
     city = next(city for city in city_data if city["iataCode"] == city_iata)
+    full_city_name = city["name"].replace("/", " ").split(" ")
+    city_name = full_city_name[0]
+    for word in full_city_name[1:]:
+        if len(city_name + " " + word) > 10:
+            break
+    response = await client.get(
+        f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
+        params={
+            "keyword": city_name,
+            "countryCode": country_code,
+            "max": 1,
+        },
+        headers={"Authorization": f"{token_type} {access_token}"},
+    )
+    response.raise_for_status()
+    city_data = response.json().get("data")
+    if city_data and city_data[0].get("geoCode"):
+        city["geoCode"] = city_data[0]["geoCode"]
     return city
