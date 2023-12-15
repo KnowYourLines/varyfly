@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from datetime import datetime
+from operator import itemgetter
 
 import httpx
 from asgiref.sync import sync_to_async
@@ -297,6 +298,7 @@ async def destinations(request):
             logging.error(
                 f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
             )
+        cities = sorted(cities, key=itemgetter("name"))
         return render(
             request,
             "destinations.html",
