@@ -105,7 +105,6 @@ async def cheapest_flight_dates(request):
                     )
                     response.raise_for_status()
                     response = response.json()
-                    logging.info(response)
                     flights = response.get("data", [])
                     currency = response.get("meta", {}).get("currency")
                     airports = response["dictionaries"]["locations"]
@@ -138,7 +137,7 @@ async def cheapest_flight_dates(request):
                     )
                     return render(
                         request,
-                        "cheapest_flight_dates.html",
+                        "no_flight_dates_found.html",
                         {
                             "form": form,
                             "destination_city": city["name"],
@@ -151,7 +150,7 @@ async def cheapest_flight_dates(request):
                     )
                     return render(
                         request,
-                        "cheapest_flight_dates.html",
+                        "no_flight_dates_found.html",
                         {
                             "form": form,
                             "destination_city": city["name"],
@@ -160,7 +159,9 @@ async def cheapest_flight_dates(request):
                     )
             return render(
                 request,
-                "cheapest_flight_dates.html",
+                "cheapest_flight_dates.html"
+                if flights
+                else "no_flight_dates_found.html",
                 {
                     "flights": flights,
                     "destination_city": city["name"],
