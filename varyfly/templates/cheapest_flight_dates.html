@@ -60,7 +60,8 @@
         <table class="table table-dark table-striped">
         <thead>
         <tr>
-            <th scope="col">Total Price</th>
+            <th scope="col"></th>
+            <th scope="col">Estimated Total Price</th>
             <th scope="col">Origin</th>
             <th scope="col">Destination</th>
             <th scope="col">Departs</th>
@@ -70,7 +71,8 @@
         <tbody>
         {% for flight in flights %}
         <tr>
-            <th scope="row"><a href="">{{ flight.price.total }} {{ currency }}</a></th>
+            <th scope="row"><a class="btn btn-primary" href="/flight-search/?{{flight.offers_querystring}}">Select</a></th>
+            <th scope="row">{{ flight.price.total }} {{ currency }}</th>
             <td>{{ flight.readable_origin }}</td>
             <td>{{ flight.readable_destination }}</td>
             <td>{{ flight.readable_departure }}</td>

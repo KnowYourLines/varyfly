@@ -105,9 +105,9 @@ async def cheapest_flight_dates(request):
                     )
                     response.raise_for_status()
                     response = response.json()
+                    logging.info(response)
                     flights = response.get("data", [])
                     currency = response.get("meta", {}).get("currency")
-                    params = response.get("meta", {}).get("defaults")
                     airports = response["dictionaries"]["locations"]
                     for flight in flights:
                         flight[
@@ -122,6 +122,9 @@ async def cheapest_flight_dates(request):
                         flight["readable_departure"] = departure_date.strftime(
                             "%a %d %b %Y"
                         )
+                        flight["offers_querystring"] = flight["links"][
+                            "flightOffers"
+                        ].split("?")[1]
                         if flight.get("returnDate"):
                             return_date = datetime.strptime(
                                 flight["returnDate"], "%Y-%m-%d"
@@ -163,7 +166,6 @@ async def cheapest_flight_dates(request):
                     "destination_city": city["name"],
                     "destination_country": city["address"]["countryName"],
                     "currency": currency,
-                    "params": params,
                     "form": form,
                 },
             )
