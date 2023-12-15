@@ -8,8 +8,8 @@ from asgiref.sync import sync_to_async
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from veyfly.forms import HomeSearchForm, HomeResultsForm, TravelPreferencesForm
-from veyfly.helpers import (
+from varyfly.forms import HomeSearchForm, HomeResultsForm, TravelPreferencesForm
+from varyfly.helpers import (
     get_home_city,
     get_destination_cities_for_airport,
     access_token_and_type,

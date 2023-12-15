@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class VeyflyConfig(AppConfig):
+class VaryflyConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "veyfly"
+    name = "varyfly"
