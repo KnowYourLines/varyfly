@@ -16,6 +16,7 @@ from varyfly.helpers import (
     get_city_details,
     save_travel_preferences,
     get_travel_preferences,
+    add_precise_city_lat_long,
 )
 
 
@@ -198,6 +199,9 @@ async def safety(request):
             country_code = request.GET.get("country_code")
             city = await get_city_details(
                 city_iata, country_code, client, token_type, access_token
+            )
+            city = await add_precise_city_lat_long(
+                city, country_code, client, token_type, access_token
             )
             response = await client.get(
                 f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/safety/safety-rated-locations",

@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 
@@ -63,11 +64,18 @@ async def get_city_details(
     response.raise_for_status()
     city_data = response.json().get("data", [])
     city = next(city for city in city_data if city["iataCode"] == city_iata)
+    return city
+
+
+async def add_precise_city_lat_long(
+    city, country_code, client, token_type, access_token
+):
     full_city_name = city["name"].replace("/", " ").split(" ")
     city_name = full_city_name[0]
     for word in full_city_name[1:]:
         if len(city_name + " " + word) > 10:
             break
+        city_name += " " + word
     response = await client.get(
         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/reference-data/locations/cities",
         params={
