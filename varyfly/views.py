@@ -349,14 +349,29 @@ async def destinations(request):
             logging.error(
                 f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
             )
-        cities = sorted(
-            cities,
-            key=lambda destination_city: destination_city["address"]["countryName"],
-        )
+        cities_by_country = {}
+        for city in cities:
+            country = city["address"]["countryName"]
+            if country not in cities_by_country:
+                cities_by_country[country] = [city]
+            else:
+                cities_by_country[country].append(city)
+        cities_by_country = {
+            country: {
+                "cities": sorted(
+                    cities,
+                    key=lambda destination_city: destination_city["name"],
+                ),
+                "index": index,
+            }
+            for index, (country, cities) in enumerate(sorted(cities_by_country.items()))
+        }
+        for country, _ in cities_by_country.items():
+            pass
         return render(
             request,
             "destinations.html",
-            {"cities": cities},
+            {"countries": cities_by_country},
         )
 
 
