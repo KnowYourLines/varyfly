@@ -24,4 +24,9 @@ urlpatterns = [
         views.busiest_travel_periods,
         name="busiest_travel_periods",
     ),
+    path(
+        "flight-search/",
+        views.flight_search,
+        name="flight_search",
+    ),
 ]

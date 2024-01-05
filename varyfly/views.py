@@ -118,6 +118,40 @@ async def busiest_travel_periods(request):
     )
 
 
+async def flight_search(request):
+    async with httpx.AsyncClient() as client:
+        try:
+            token_type, access_token = await access_token_and_type(client)
+            params = {
+                "originLocationCode": request.GET.get("originLocationCode"),
+                "destinationLocationCode": request.GET.get("destinationLocationCode"),
+                "departureDate": request.GET.get("departureDate"),
+                "returnDate": request.GET.get("returnDate"),
+                "adults": request.GET.get("adults"),
+                "nonStop": request.GET.get("nonStop"),
+            }
+            response = await client.get(
+                f"https://{os.environ.get('AMADEUS_BASE_URL')}/v2/shopping/flight-offers",
+                params=params,
+                headers={"Authorization": f"{token_type} {access_token}"},
+                timeout=None,
+            )
+            response.raise_for_status()
+            response = response.json()
+            logging.info(response)
+        except httpx.RequestError as exc:
+            logging.error(f"An error occurred while requesting {exc.request.url}.")
+        except httpx.HTTPStatusError as exc:
+            logging.error(
+                f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}"
+            )
+    return render(
+        request,
+        "flight_search.html",
+        {},
+    )
+
+
 async def cheapest_flight_dates(request):
     destination_iata = request.GET.get("destination_iata")
     country_code = request.GET.get("country_code")
@@ -153,6 +187,7 @@ async def cheapest_flight_dates(request):
                         f"https://{os.environ.get('AMADEUS_BASE_URL')}/v1/shopping/flight-dates",
                         params=params,
                         headers={"Authorization": f"{token_type} {access_token}"},
+                        timeout=None,
                     )
                     response.raise_for_status()
                     response = response.json()
